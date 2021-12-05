@@ -53,6 +53,31 @@ def del_column(column_index: int, data_frame: list) -> list:
     return new_frame
 
 
+def devide_data_frame(column_index: int, data_frame: list) -> list:
+    """
+    Devide the data frame by a column with the given index.
+    
+    Input:
+     * column_index: int
+     * data_frame: list[list[DATA]]
+    
+    Output:
+     * data_frames: list[ list[list[DATA]] ] - devided data frame
+    """
+    values = get_unique_values(column_index, data_frame)
+    frames = [ [] for _ in range(len(values))]
+    for row in data_frame:
+        for index, value in enumerate(values):
+            if row[column_index] == value:
+                frames[index].append(row)
+
+    for index, frame in enumerate(frames):
+        frames[index] = del_column(column_index, frame)
+
+    return frames
+    
+
+
 def get_unique_values(column_index: int, data_frame: list) -> set:
     """
     Return unique values from the column with the given index.
@@ -195,8 +220,7 @@ if __name__ == "__main__":
     for row in data:
         print(row)
     print()
-    for row in del_column(1, data):
-        print(row)
-    print()
-    for row in data:
-        print(row)
+    for frame in devide_data_frame(0, data):
+        for row in frame:
+            print(row)
+        print()
