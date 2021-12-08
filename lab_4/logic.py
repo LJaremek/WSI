@@ -1,7 +1,99 @@
+from __future__ import annotations
+
 from math import log
 
+class DataFrame:
+    def __init__(self,
+                 rows: list = None,
+                 labels: list = None, 
+                 title: str = None) -> None:
+        if rows is None:
+            self._rows = []
+        else:
+            self._rows = rows
+        if labels is None and rows is None:
+            self._labels = []
+        elif labels is None:
+            self._labels = [ str(i) for i in range(len(self._rows[0])) ]
+        else:
+            self._labels = labels
+        self._title = title
+    
+    def __getitem__(self, index: int) -> list:
+        return self._rows[index]
+    
+    def __next__(self):
+        for row in self._rows:
+            return row
 
-def get_data_frame(file_name: str = "./nursery.data") -> list:
+    def __str__(self) -> str:
+        string = f"----== {self._title} ==----\n"
+        for l in self._labels:
+            string += str(l)
+            string += "\t"
+        string += "\n"
+        string += "\n"
+        for row in self._rows:
+            for v in row:
+                string += str(v)
+                string += "\t"
+            string += "\n"
+        string += f"----== {self._title} ==----\n"
+        return string
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def get_row(self, index: int) -> list:
+        return self._rows[index]
+
+    def get_column(self, index: int) -> list:
+        return [row[index] for row in self._rows]
+    
+    def get_title(self) -> str:
+        return self._title
+    
+    def set_title(self, new_title: str) -> None:
+        self._title = new_title
+        
+    def get_labels(self) -> list:
+        return [label for label in self._labels]
+
+    def add_row(self, row: list, index: int = -1) -> None:
+        self._rows.insert(index, row)
+
+    def add_column(self, column: list, index: int = -1) -> None:
+        for c_i, row in enumerate(self._rows):
+            self._rows.insert(index, column[c_i])
+            
+    def del_column(self, column_index: int) -> None:
+        for row in self._rows:
+            del row[column_index]
+        print("1", self._labels)
+        print("DEL", self._title, column_index)
+        del self._labels[column_index]  # TODO
+        print("2", self._labels)
+            
+    def devide_data_frame(self, column_index: int) -> DataFrame:
+        values = get_unique_values(column_index, self)
+        frames = {}
+        for value in values:
+            frames[value] = DataFrame(labels=self.get_labels(), title=value)
+
+        for row in self._rows:
+            for index, value in enumerate(values):
+                if row[column_index] == value:
+                    frames[value].add_row(row)
+
+        for frame in frames:
+            frames[frame].del_column(column_index)
+
+        return list(frames.values())
+            
+        
+
+
+def get_data_frame(file_name: str = "./nursery.data") -> DataFrame:
     """
     Open the file with the data and return it as a list.
     
@@ -11,13 +103,13 @@ def get_data_frame(file_name: str = "./nursery.data") -> list:
     Output:
      * rows: list[list[str]]
     """
-    data_frame = []
+    rows = []
     with open(file_name, "r", -1, "utf-8") as file:
         for row in file:
             row = row.strip().split(",")
             if row != [""]:
-                data_frame.append(row)
-    return data_frame
+                rows.append(row)
+    return DataFrame(rows)
 
 
 def get_column(column_index: int, data_frame: list) -> list:
@@ -62,23 +154,25 @@ def devide_data_frame(column_index: int, data_frame: list) -> list:
      * data_frame: list[list[DATA]]
     
     Output:
-     * data_frames: list[ list[list[DATA]] ] - devided data frame
+     * data_frames: dict[ key : list[list[DATA]] ] - devided data frames
     """
     values = get_unique_values(column_index, data_frame)
-    frames = [ [] for _ in range(len(values))]
+    frames = [ {value: []} for value in values]
     for row in data_frame:
         for index, value in enumerate(values):
             if row[column_index] == value:
-                frames[index].append(row)
+                frames[index][value].append(row)
 
     for index, frame in enumerate(frames):
-        frames[index] = del_column(column_index, frame)
+        key = list(frame.keys())[0]
+        frame = frame[key]
+        frames[index][key] = del_column(column_index, frame)
 
     return frames
     
 
 
-def get_unique_values(column_index: int, data_frame: list) -> set:
+def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
     """
     Return unique values from the column with the given index.
     
@@ -94,7 +188,7 @@ def get_unique_values(column_index: int, data_frame: list) -> set:
         
 
 
-def i(column_index: int, data_frame: list) -> float:
+def i(column_index: int, data_frame: DataFrame) -> float:
     """
     Entropy of a column.
     
@@ -105,7 +199,7 @@ def i(column_index: int, data_frame: list) -> float:
     Output:
      * entropy: float
     """
-    column = get_column(column_index, data_frame)
+    column = data_frame.get_column(column_index)  # get_column(column_index, data_frame)
     sum = 0
     length = len(column)
     elements = {}
@@ -124,7 +218,7 @@ def i(column_index: int, data_frame: list) -> float:
     return -sum
 
 
-def inf(column1_index: int, column2_index: int, data_frame: list) -> float:
+def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
     """
     Entropy of a data frame devided by column with index column1_index.
     Column with column2_index is a column with values.
@@ -132,13 +226,13 @@ def inf(column1_index: int, column2_index: int, data_frame: list) -> float:
     Input:
      * column1_index: int - A column that divides a data frame
      * column2_index: int - A column with values
-     * data_frame: list[list[DATA]]
+     * data_frame: DataFrame
      
     Output:
      * Entropy: float
     """
-    column1 = get_column(column1_index, data_frame)
-    column2 = get_column(column2_index, data_frame)
+    column1 = data_frame.get_column(column1_index)  # get_column(column1_index, data_frame)
+    column2 = data_frame.get_column(column2_index)  # get_column(column2_index, data_frame)
 
     elements1 = {}
     all_elements1 = 0
@@ -187,7 +281,7 @@ def inf(column1_index: int, column2_index: int, data_frame: list) -> float:
 
 def inf_gain(column_index1: int, 
              column_index2: int, 
-             data_frame: list) -> float:
+             data_frame: DataFrame) -> float:
     """
     Information acquirement of data frame 
     devided by column with index column1_index.
@@ -196,7 +290,7 @@ def inf_gain(column_index1: int,
     Input:
      * column1_index: int - A column that divides a data frame
      * column2_index: int - A column with values
-     * data_frame: list[list[DATA]]
+     * data_frame: DataFrame
      
     Output:
      * Information acquirement: float
@@ -212,15 +306,13 @@ if __name__ == "__main__":
             ["B", 2, 1],
             ["B", 2, 0],
             ["B", 3, 1]]
-    print("I:", i(-1, data))
-    print("Inf:", inf(0, -1, data))
-    print("InfGain:", inf_gain(0, -1, data))
+    df = DataFrame(data)
+    print("I:", i(-1, df))
+    print("Inf:", inf(0, -1, df))
+    print("InfGain:", inf_gain(0, -1, df))
     
-    print()
-    for row in data:
-        print(row)
-    print()
-    for frame in devide_data_frame(0, data):
-        for row in frame:
-            print(row)
-        print()
+    # for row in df:
+    #     print(row)
+        
+    for frame in df.devide_data_frame(0):
+        print(frame)
