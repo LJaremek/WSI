@@ -50,6 +50,12 @@ class DataFrame:
     def get_column(self, index: int) -> list:
         return [row[index] for row in self._rows]
     
+    def columns(self) -> int:
+        return len(self._rows[0])
+    
+    def rows(self) -> int:
+        return len(self._rows)
+    
     def get_title(self) -> str:
         return self._title
     
@@ -58,6 +64,9 @@ class DataFrame:
         
     def get_labels(self) -> list:
         return [label for label in self._labels]
+
+    def get_label(self, index: int) -> str:
+        return self._labels[index]
 
     def add_row(self, row: list, index: int = -1) -> None:
         self._rows.insert(index, row)
@@ -69,10 +78,7 @@ class DataFrame:
     def del_column(self, column_index: int) -> None:
         for row in self._rows:
             del row[column_index]
-        print("1", self._labels)
-        print("DEL", self._title, column_index)
-        del self._labels[column_index]  # TODO
-        print("2", self._labels)
+        del self._labels[column_index]
             
     def devide_data_frame(self, column_index: int) -> DataFrame:
         values = get_unique_values(column_index, self)
@@ -89,8 +95,6 @@ class DataFrame:
             frames[frame].del_column(column_index)
 
         return list(frames.values())
-            
-        
 
 
 def get_data_frame(file_name: str = "./nursery.data") -> DataFrame:
@@ -101,7 +105,7 @@ def get_data_frame(file_name: str = "./nursery.data") -> DataFrame:
      * file_name: str - file name / location and name
     
     Output:
-     * rows: list[list[str]]
+     * rows: DataFrame
     """
     rows = []
     with open(file_name, "r", -1, "utf-8") as file:
@@ -169,7 +173,6 @@ def devide_data_frame(column_index: int, data_frame: list) -> list:
         frames[index][key] = del_column(column_index, frame)
 
     return frames
-    
 
 
 def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
@@ -185,7 +188,6 @@ def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
     """
     values = [row[column_index] for row in data_frame]
     return set(values)
-        
 
 
 def i(column_index: int, data_frame: DataFrame) -> float:
@@ -306,7 +308,7 @@ if __name__ == "__main__":
             ["B", 2, 1],
             ["B", 2, 0],
             ["B", 3, 1]]
-    df = DataFrame(data)
+    df = DataFrame(data, ["x1", "x2", "y"])
     print("I:", i(-1, df))
     print("Inf:", inf(0, -1, df))
     print("InfGain:", inf_gain(0, -1, df))
