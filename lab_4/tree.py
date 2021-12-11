@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import Counter
 
 from logic import *
 
@@ -81,6 +82,21 @@ class DecisionTree:
     def predict(self, row: list) -> str:
         pass
 
+    def _the_most_popular(self, the_list: list):
+        counter = {}
+        for el in the_list:
+            if el in counter:
+                counter[el] += 1
+            else:
+                counter[el] = 1
+        max_ = -1
+        max_el = None
+        for el in counter:
+            if counter[el] > max_:
+                max_ = counter[el]
+                max_el = el
+        return max_el
+
     def _get_entropies(self, data_frame: DataFrame) -> list:
         entropies = []
         for index in range(len(data_frame[0])-1):
@@ -113,9 +129,8 @@ class DecisionTree:
     def _build_node(self,
                     parent_title: str,
                     value,
-                    parent: Node, data_frame: DataFrame) -> None:
-        # print("NODE", parent_title)
-        # print(data_frame)
+                    parent: Node, 
+                    data_frame: DataFrame) -> None:
         entropies = self._get_entropies(data_frame)
         the_best_index = self._get_max_entropy(entropies)[0]
         children = data_frame.devide_data_frame(the_best_index)
@@ -165,50 +180,51 @@ class DecisionTree:
             index_of_label = self._df.get_labels().index(node_value)
             last_value = value
             value = row[index_of_label]
+
             if last_value == value:
-                return "INNE"
-            # print(value)
+                if node.leaf():
+                    return self._the_most_popular(node.get_children())
+                else:
+                    # print(node.get_children())
+                    # print("!2", self._the_most_popular(node.get_children()))
+                    return self._the_most_popular(node.get_children())
+
             for child in node.get_children():
-                # print(child)
                 if child.get_label() == value:
-                    # print("v:", child.get_value())
                     if child.leaf():
-                        # print("leaf")
                         return child.get_value()
                     else:
-                        # print("node")
                         node = child
-                        break # ? break, continue
-            # print("True")
-            # return print("!")
-        
+                        break
 
 
 if __name__ == "__main__":
-    data = [["A", 1, 0],
-            ["B", 1, 1],
-            ["B", 2, 1],
-            ["B", 2, 0],
-            ["B", 3, 1]]
+    rows = open_file()
+    print("Rows:", len(rows))
     
-    #        x1,  x2, x3, y
-    data = [["A", "w", "t", 0],
-            ["A", "w", "n", 1],
-            ["B", "u", "t", 0],
-            ["B", "i", "t", 1],
-            ["A", "u", "n", 0],
-            ["B", "w", "n", 1]]
+    parts = 5
+    train_parts = split_data(rows, parts)
+    print("Parts:", parts, "with:", len(train_parts[0]), "elemetns")
+    test_part = train_parts.pop()
+    trees = []
 
-    df = DataFrame(data, ["x1", "x2", "x3", "y"])
-    df = get_data_frame()
-    # print(df)
-    tree = DecisionTree(df)
-    print("Powinno być:", tree.get_data_frame()._rows[69][-1])
-    tree.build_tree()
-    # print(tree.get_data_frame()._rows[63])
-    # input()
-    # tree.print_tree()
+    for part in train_parts:
+        tree = DecisionTree(DataFrame(part))
+        tree.build_tree()
+        trees.append(tree)
 
-    # print(tree.get_data_frame()._rows)
-    # print(tree.check(["A", "i", "t"]))
-    print("Jest:", tree.check(['usual', 'proper', 'complete', '2', 'convenient', 'inconv', 'problematic', 'recommended']))
+    results = {"ok": 0,
+               "ni": 0}
+    for row in test_part:
+        result = row.pop()
+        res = []
+        for tree in trees:
+            res.append(tree.check(row))
+        c = Counter(res)
+        res = c.most_common(1)[0][0]
+        if result == res:
+            results["ok"] += 1
+        else:
+            results["ni"] += 1
+    
+    print(results)

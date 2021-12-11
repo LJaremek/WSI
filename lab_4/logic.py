@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from random import randint
 from math import log
 
 class DataFrame:
@@ -97,7 +98,7 @@ class DataFrame:
         return list(frames.values())
 
 
-def get_data_frame(file_name: str = "./nursery.data") -> DataFrame:
+def open_file(file_name: str = "./nursery.data") -> list:
     """
     Open the file with the data and return it as a list.
     
@@ -113,7 +114,18 @@ def get_data_frame(file_name: str = "./nursery.data") -> DataFrame:
             row = row.strip().split(",")
             if row != [""]:
                 rows.append(row)
-    return DataFrame(rows)
+    return rows
+
+
+def split_data(rows: list, parts: int = 3) -> list:
+    part_list = [ [] for _ in range(parts) ]
+    p_index = 0
+    while rows != []:
+        index = randint(0, len(rows)-1)
+        part_list[p_index].append(rows.pop(index))
+        p_index += 1
+        p_index = p_index%parts
+    return part_list
 
 
 def get_column(column_index: int, data_frame: list) -> list:
@@ -303,18 +315,22 @@ def inf_gain(column_index1: int,
 
 
 if __name__ == "__main__":
-    data = [["A", 1, 0],
-            ["B", 1, 1],
-            ["B", 2, 1],
-            ["B", 2, 0],
-            ["B", 3, 1]]
-    df = DataFrame(data, ["x1", "x2", "y"])
-    print("I:", i(-1, df))
-    print("Inf:", inf(0, -1, df))
-    print("InfGain:", inf_gain(0, -1, df))
+    rows = open_file()
+    parts = split_data(rows)
+    print(len(rows))
+    # [print(len(p)) for p in parts]
+    # data = [["A", 1, 0],
+    #         ["B", 1, 1],
+    #         ["B", 2, 1],
+    #         ["B", 2, 0],
+    #         ["B", 3, 1]]
+    # df = DataFrame(data, ["x1", "x2", "y"])
+    # print("I:", i(-1, df))
+    # print("Inf:", inf(0, -1, df))
+    # print("InfGain:", inf_gain(0, -1, df))
     
-    # for row in df:
-    #     print(row)
+    # # for row in df:
+    # #     print(row)
         
-    for frame in df.devide_data_frame(0):
-        print(frame)
+    # for frame in df.devide_data_frame(0):
+    #     print(frame)
