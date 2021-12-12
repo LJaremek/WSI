@@ -79,9 +79,6 @@ class DecisionTree:
     def get_main_node(self) -> Node:
         return self._main_node
 
-    def predict(self, row: list) -> str:
-        pass
-
     def _the_most_popular(self, the_list: list) -> Node:
         counter = {}
         for el in the_list:
@@ -204,23 +201,26 @@ class DecisionTree:
 
 
 if __name__ == "__main__":
+    # Get Data
     rows = open_file()
     print("Rows:", len(rows))
     y_values = list(get_unique_values(-1, DataFrame(rows)))
-    print("y:", y_values)
+    print("y:", ", ".join(y_values))
     
+    # Split Data
     parts = 5
     train_parts = split_data(rows, parts)
     test_part = train_parts.pop()
     print("Parts:", parts, "with:", len(train_parts[0]), "elemetns")
     
+    # Train trees
     trees = []
-
     for part in train_parts:
         tree = DecisionTree(DataFrame(part))
         tree.build_tree()
         trees.append(tree)
 
+    # Get results
     results = [ [ 0 for _ in y_values] for _ in y_values ]
     for row in test_part:
         desired_result = row.pop()
@@ -231,15 +231,16 @@ if __name__ == "__main__":
         c = Counter(obtained_results)
         obtained_result = c.most_common(1)[0][0]
         
-        # print(y_values)
         index_0 = y_values.index(desired_result)
         index_1 = y_values.index(obtained_result)
         results[index_0][index_1] += 1
 
-    print(y_values)
+    # Print results
+    print("\n\t\t", "\t".join(y_values))
     for index, value in enumerate(y_values):
-        print(value, results[index])
-        
+        print(value, "\t", "\t\t".join(list(map(str, results[index]))))
+    
+    # Get matrix
     metrics = {}
     for y in y_values:
         metrics[y] = {"tp": 0,
@@ -257,10 +258,13 @@ if __name__ == "__main__":
                                 if i != index])
         metrics[y]["fn"] = sum(results[index][:index] + 
                                results[index][index+1:])
+
+    # Print Matrix
     print("\nMatrix:")
     for key in metrics:
         print(key, metrics[key])
-        
+
+    # Get and print additional parameters
     tpr = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) + 
                                        sum([metrics[key]["fn"]]))
     fpr = sum([metrics[key]["fp"]]) / (sum([metrics[key]["fp"]]) + 

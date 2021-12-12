@@ -128,65 +128,6 @@ def split_data(rows: list, parts: int = 3) -> list:
     return part_list
 
 
-def get_column(column_index: int, data_frame: list) -> list:
-    """
-    Extract a column with the given index from the data frame.
-    
-    Input:
-     * column_index: int
-     * data_frame: list[list[DATA]]
-    
-    Output:
-     * data_frame: list[DATA]
-    """
-    return [row[column_index] for row in data_frame]
-
-
-def del_column(column_index: int, data_frame: list) -> list:
-    """
-    Delete a column with the given index from the data frame.
-    
-    Input:
-     * column_index: int
-     * data_frame: list[list[DATA]]
-    
-    Output:
-     * data_frame: list[DATA] - without the column
-    """
-    new_frame = []
-    for row in data_frame:
-        new_row = [element for index, element in enumerate(row) 
-                   if index != column_index]
-        new_frame.append(new_row)
-    return new_frame
-
-
-def devide_data_frame(column_index: int, data_frame: list) -> list:
-    """
-    Devide the data frame by a column with the given index.
-    
-    Input:
-     * column_index: int
-     * data_frame: list[list[DATA]]
-    
-    Output:
-     * data_frames: dict[ key : list[list[DATA]] ] - devided data frames
-    """
-    values = get_unique_values(column_index, data_frame)
-    frames = [ {value: []} for value in values]
-    for row in data_frame:
-        for index, value in enumerate(values):
-            if row[column_index] == value:
-                frames[index][value].append(row)
-
-    for index, frame in enumerate(frames):
-        key = list(frame.keys())[0]
-        frame = frame[key]
-        frames[index][key] = del_column(column_index, frame)
-
-    return frames
-
-
 def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
     """
     Return unique values from the column with the given index.
@@ -213,7 +154,7 @@ def i(column_index: int, data_frame: DataFrame) -> float:
     Output:
      * entropy: float
     """
-    column = data_frame.get_column(column_index)  # get_column(column_index, data_frame)
+    column = data_frame.get_column(column_index)
     sum = 0
     length = len(column)
     elements = {}
@@ -245,8 +186,8 @@ def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
     Output:
      * Entropy: float
     """
-    column1 = data_frame.get_column(column1_index)  # get_column(column1_index, data_frame)
-    column2 = data_frame.get_column(column2_index)  # get_column(column2_index, data_frame)
+    column1 = data_frame.get_column(column1_index)
+    column2 = data_frame.get_column(column2_index)
 
     elements1 = {}
     all_elements1 = 0
@@ -315,32 +256,23 @@ def inf_gain(column_index1: int,
 
 
 if __name__ == "__main__":
-    rows = open_file()
-    parts = split_data(rows)
-    print(len(rows))
-    # [print(len(p)) for p in parts]
-    # data = [["A", 1, 0],
-    #         ["B", 1, 1],
-    #         ["B", 2, 1],
-    #         ["B", 2, 0],
-    #         ["B", 3, 1]]
-    # df = DataFrame(data, ["x1", "x2", "y"])
-    # print("I:", i(-1, df))
-    # print("Inf:", inf(0, -1, df))
-    # print("InfGain:", inf_gain(0, -1, df))
-    
-    # # for row in df:
-    # #     print(row)
-        
-    # for frame in df.devide_data_frame(0):
-    #     print(frame)
+    data = [["A", 1, 0],
+            ["B", 1, 1],
+            ["B", 2, 1],
+            ["B", 2, 0],
+            ["B", 3, 1]]
+    df = DataFrame(data, ["x1", "x2", "y"])
+    print(df)
+    print("I:", i(-1, df))
+    print("Inf:", inf(0, -1, df))
+    print("InfGain:", inf_gain(0, -1, df))
 
-    the_list = DataFrame(open_file())
-    the_list = the_list.get_column(-1)
-    counter = {}
-    for el in the_list:
-        if el in counter:
-            counter[el] += 1
-        else:
-            counter[el] = 1
-    print(counter)
+    # the_list = DataFrame(open_file())
+    # the_list = the_list.get_column(-1)
+    # counter = {}
+    # for el in the_list:
+    #     if el in counter:
+    #         counter[el] += 1
+    #     else:
+    #         counter[el] = 1
+    # print(counter)
