@@ -82,7 +82,7 @@ class DecisionTree:
     def predict(self, row: list) -> str:
         pass
 
-    def _the_most_popular(self, the_list: list):
+    def _the_most_popular(self, the_list: list) -> Node:
         counter = {}
         for el in the_list:
             if el in counter:
@@ -161,7 +161,7 @@ class DecisionTree:
             else:
                 self._build_node(title, the_best_index, self._main_node, child)
 
-    def print_tree(self) -> None:
+    def print(self) -> None:
         to_print = [(self._main_node, 0)]
         while to_print != []:
             node, deep = to_print.pop(0)
@@ -183,15 +183,20 @@ class DecisionTree:
 
             if last_value == value:
                 if node.leaf():
+                    # print("!1", self._the_most_popular(node.get_children()))
                     return self._the_most_popular(node.get_children())
                 else:
-                    # print(node.get_children())
                     # print("!2", self._the_most_popular(node.get_children()))
-                    return self._the_most_popular(node.get_children())
+                    the_popular = self._the_most_popular(node.get_children()).get_value()
+                    if the_popular.isnumeric():
+                        # print("!2.1", self._the_most_popular(self._df.get_column(-1)))
+                        return self._the_most_popular(self._df.get_column(-1))
+                    return the_popular
 
             for child in node.get_children():
                 if child.get_label() == value:
                     if child.leaf():
+                        # print("!3", child.get_value())
                         return child.get_value()
                     else:
                         node = child
@@ -201,11 +206,14 @@ class DecisionTree:
 if __name__ == "__main__":
     rows = open_file()
     print("Rows:", len(rows))
+    y_values = list(get_unique_values(-1, DataFrame(rows)))
+    print("y:", y_values)
     
     parts = 5
     train_parts = split_data(rows, parts)
-    print("Parts:", parts, "with:", len(train_parts[0]), "elemetns")
     test_part = train_parts.pop()
+    print("Parts:", parts, "with:", len(train_parts[0]), "elemetns")
+    
     trees = []
 
     for part in train_parts:
@@ -213,18 +221,56 @@ if __name__ == "__main__":
         tree.build_tree()
         trees.append(tree)
 
-    results = {"ok": 0,
-               "ni": 0}
+    results = [ [ 0 for _ in y_values] for _ in y_values ]
     for row in test_part:
-        result = row.pop()
-        res = []
+        desired_result = row.pop()
+        obtained_results = []
+
         for tree in trees:
-            res.append(tree.check(row))
-        c = Counter(res)
-        res = c.most_common(1)[0][0]
-        if result == res:
-            results["ok"] += 1
-        else:
-            results["ni"] += 1
+            obtained_results.append(tree.check(row))
+        c = Counter(obtained_results)
+        obtained_result = c.most_common(1)[0][0]
+        
+        # print(y_values)
+        index_0 = y_values.index(desired_result)
+        index_1 = y_values.index(obtained_result)
+        results[index_0][index_1] += 1
+
+    print(y_values)
+    for index, value in enumerate(y_values):
+        print(value, results[index])
+        
+    metrics = {}
+    for y in y_values:
+        metrics[y] = {"tp": 0,
+                      "tn": 0,
+                      "fn": 0,
+                      "fp": 0}
     
-    print(results)
+    for index, y in enumerate(y_values):
+        metrics[y]["tp"] = results[index][index]
+        metrics[y]["tn"] = sum([row[i] 
+                                for i, row in enumerate(results)
+                                if i != index])
+        metrics[y]["fp"] = sum([row[index]
+                                for i, row in enumerate(results)
+                                if i != index])
+        metrics[y]["fn"] = sum(results[index][:index] + 
+                               results[index][index+1:])
+    print("\nMatrix:")
+    for key in metrics:
+        print(key, metrics[key])
+        
+    tpr = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) + 
+                                       sum([metrics[key]["fn"]]))
+    fpr = sum([metrics[key]["fp"]]) / (sum([metrics[key]["fp"]]) + 
+                                       sum([metrics[key]["tn"]]))
+    ppv = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) + 
+                                       sum([metrics[key]["fp"]]))
+    acc = ((sum([metrics[key]["tp"]]) + sum([metrics[key]["tn"]])) / 
+           (sum([metrics[key]["tp"]]) + sum([metrics[key]["fn"]]) +
+            sum([metrics[key]["tn"]]) + sum([metrics[key]["fn"]])))
+    print("\nTPR:", tpr)
+    print("FPR:", fpr)
+    print("PPV:", ppv)
+    print("Acc:", acc)

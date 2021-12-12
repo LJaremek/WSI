@@ -334,3 +334,13 @@ if __name__ == "__main__":
         
     # for frame in df.devide_data_frame(0):
     #     print(frame)
+
+    the_list = DataFrame(open_file())
+    the_list = the_list.get_column(-1)
+    counter = {}
+    for el in the_list:
+        if el in counter:
+            counter[el] += 1
+        else:
+            counter[el] = 1
+    print(counter)
