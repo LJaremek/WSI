@@ -1,18 +1,22 @@
 from __future__ import annotations
 from collections import Counter
 
-from logic import *
+from logic import open_file, split_data
+from logic import get_unique_values
+from logic import i, inf_gain
+from logic import DataFrame
+# rezonator kwarcowy laptop
 
 
 class Node:
     def __init__(self,
                  label: str,
-                 value: str, # y
+                 value: str,  # y
                  count: int = 0,
                  parent: Node = None,
                  children: list = None):
         self._label = label
-        self._value = value # y
+        self._value = value  # y
         self._count = count
         self._parent = parent
         self.set_children(children)
@@ -28,7 +32,7 @@ class Node:
 
     def get_value(self) -> Node:
         return self._value
-    
+
     def get_count(self) -> int:
         return self._count
 
@@ -37,13 +41,13 @@ class Node:
 
     def get_children(self) -> list:
         return self._children
-    
+
     def set_label(self, new_label: str) -> None:
         self._label = new_label
-        
+
     def set_value(self, new_value: str) -> None:
         self._value = new_value
-        
+
     def set_count(self, new_count: int) -> None:
         self._count = new_count
 
@@ -99,25 +103,23 @@ class DecisionTree:
         for index in range(len(data_frame[0])-1):
             entropies.append((index, inf_gain(index, -1, data_frame)))
         return entropies
-    
+
     def _get_max_entropy(self, entropies: list) -> tuple:
         """
         Return tuple with the highest entropy.
-        
+
         Input:
          * entropies: list[tuple[index: int, entropy: float]]
-        
+
         Output:
          * result: tuple[index: int, entropy: float]
         """
         return sorted(entropies, key=lambda x: x[1])[-1]
 
-    def _build_leaves(self, 
-                      key: str, 
-                      parent: Node, 
+    def _build_leaves(self,
+                      key: str,
+                      parent: Node,
                       data_frame: DataFrame) -> None:
-        # print("LEAF", key)
-        # print(data_frame)
         values = get_unique_values(-1, data_frame)
         for value in values:
             new_leaf = Node(key, value, 0, parent, None)
@@ -126,7 +128,7 @@ class DecisionTree:
     def _build_node(self,
                     parent_title: str,
                     value,
-                    parent: Node, 
+                    parent: Node,
                     data_frame: DataFrame) -> None:
         entropies = self._get_entropies(data_frame)
         the_best_index = self._get_max_entropy(entropies)[0]
@@ -180,20 +182,17 @@ class DecisionTree:
 
             if last_value == value:
                 if node.leaf():
-                    # print("!1", self._the_most_popular(node.get_children()))
                     return self._the_most_popular(node.get_children())
                 else:
-                    # print("!2", self._the_most_popular(node.get_children()))
-                    the_popular = self._the_most_popular(node.get_children()).get_value()
+                    the_popular = self._the_most_popular(node.get_children()) \
+                                                             .get_value()
                     if the_popular.isnumeric():
-                        # print("!2.1", self._the_most_popular(self._df.get_column(-1)))
                         return self._the_most_popular(self._df.get_column(-1))
                     return the_popular
 
             for child in node.get_children():
                 if child.get_label() == value:
                     if child.leaf():
-                        # print("!3", child.get_value())
                         return child.get_value()
                     else:
                         node = child
@@ -206,13 +205,13 @@ if __name__ == "__main__":
     print("Rows:", len(rows))
     y_values = list(get_unique_values(-1, DataFrame(rows)))
     print("y:", ", ".join(y_values))
-    
+
     # Split Data
     parts = 5
     train_parts = split_data(rows, parts)
     test_part = train_parts.pop()
     print("Parts:", parts, "with:", len(train_parts[0]), "elemetns")
-    
+
     # Train trees
     trees = []
     for part in train_parts:
@@ -221,7 +220,7 @@ if __name__ == "__main__":
         trees.append(tree)
 
     # Get results
-    results = [ [ 0 for _ in y_values] for _ in y_values ]
+    results = [[0 for _ in y_values] for _ in y_values]
     for row in test_part:
         desired_result = row.pop()
         obtained_results = []
@@ -230,7 +229,7 @@ if __name__ == "__main__":
             obtained_results.append(tree.check(row))
         c = Counter(obtained_results)
         obtained_result = c.most_common(1)[0][0]
-        
+
         index_0 = y_values.index(desired_result)
         index_1 = y_values.index(obtained_result)
         results[index_0][index_1] += 1
@@ -239,7 +238,7 @@ if __name__ == "__main__":
     print("\n\t\t", "\t".join(y_values))
     for index, value in enumerate(y_values):
         print(value, "\t", "\t\t".join(list(map(str, results[index]))))
-    
+
     # Get matrix
     metrics = {}
     for y in y_values:
@@ -247,16 +246,16 @@ if __name__ == "__main__":
                       "tn": 0,
                       "fn": 0,
                       "fp": 0}
-    
+
     for index, y in enumerate(y_values):
         metrics[y]["tp"] = results[index][index]
-        metrics[y]["tn"] = sum([row[i] 
+        metrics[y]["tn"] = sum([row[i]
                                 for i, row in enumerate(results)
                                 if i != index])
         metrics[y]["fp"] = sum([row[index]
                                 for i, row in enumerate(results)
                                 if i != index])
-        metrics[y]["fn"] = sum(results[index][:index] + 
+        metrics[y]["fn"] = sum(results[index][:index] +
                                results[index][index+1:])
 
     # Print Matrix
@@ -265,13 +264,13 @@ if __name__ == "__main__":
         print(key, metrics[key])
 
     # Get and print additional parameters
-    tpr = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) + 
+    tpr = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) +
                                        sum([metrics[key]["fn"]]))
-    fpr = sum([metrics[key]["fp"]]) / (sum([metrics[key]["fp"]]) + 
+    fpr = sum([metrics[key]["fp"]]) / (sum([metrics[key]["fp"]]) +
                                        sum([metrics[key]["tn"]]))
-    ppv = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) + 
+    ppv = sum([metrics[key]["tp"]]) / (sum([metrics[key]["tp"]]) +
                                        sum([metrics[key]["fp"]]))
-    acc = ((sum([metrics[key]["tp"]]) + sum([metrics[key]["tn"]])) / 
+    acc = ((sum([metrics[key]["tp"]]) + sum([metrics[key]["tn"]])) /
            (sum([metrics[key]["tp"]]) + sum([metrics[key]["fn"]]) +
             sum([metrics[key]["tn"]]) + sum([metrics[key]["fn"]])))
     print("\nTPR:", tpr)

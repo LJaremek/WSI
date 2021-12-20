@@ -3,10 +3,11 @@ from __future__ import annotations
 from random import randint
 from math import log
 
+
 class DataFrame:
     def __init__(self,
                  rows: list = None,
-                 labels: list = None, 
+                 labels: list = None,
                  title: str = None) -> None:
         if rows is None:
             self._rows = []
@@ -15,22 +16,22 @@ class DataFrame:
         if labels is None and rows is None:
             self._labels = []
         elif labels is None:
-            self._labels = [ str(i) for i in range(len(self._rows[0])) ]
+            self._labels = [str(i) for i in range(len(self._rows[0]))]
         else:
             self._labels = labels
         self._title = title
-    
+
     def __getitem__(self, index: int) -> list:
         return self._rows[index]
-    
+
     def __next__(self):
         for row in self._rows:
             return row
 
     def __str__(self) -> str:
         string = f"----== {self._title} ==----\n"
-        for l in self._labels:
-            string += str(l)
+        for label in self._labels:
+            string += str(label)
             string += "\t"
         string += "\n"
         string += "\n"
@@ -41,7 +42,7 @@ class DataFrame:
             string += "\n"
         string += f"----== {self._title} ==----\n"
         return string
-    
+
     def __repr__(self) -> str:
         return self.__str__()
 
@@ -50,19 +51,19 @@ class DataFrame:
 
     def get_column(self, index: int) -> list:
         return [row[index] for row in self._rows]
-    
+
     def columns(self) -> int:
         return len(self._rows[0])
-    
+
     def rows(self) -> int:
         return len(self._rows)
-    
+
     def get_title(self) -> str:
         return self._title
-    
+
     def set_title(self, new_title: str) -> None:
         self._title = new_title
-        
+
     def get_labels(self) -> list:
         return [label for label in self._labels]
 
@@ -75,12 +76,12 @@ class DataFrame:
     def add_column(self, column: list, index: int = -1) -> None:
         for c_i, row in enumerate(self._rows):
             self._rows.insert(index, column[c_i])
-            
+
     def del_column(self, column_index: int) -> None:
         for row in self._rows:
             del row[column_index]
         del self._labels[column_index]
-            
+
     def devide_data_frame(self, column_index: int) -> DataFrame:
         values = get_unique_values(column_index, self)
         frames = {}
@@ -101,10 +102,10 @@ class DataFrame:
 def open_file(file_name: str = "./nursery.data") -> list:
     """
     Open the file with the data and return it as a list.
-    
+
     Input:
      * file_name: str - file name / location and name
-    
+
     Output:
      * rows: DataFrame
     """
@@ -118,24 +119,24 @@ def open_file(file_name: str = "./nursery.data") -> list:
 
 
 def split_data(rows: list, parts: int = 3) -> list:
-    part_list = [ [] for _ in range(parts) ]
+    part_list = [[] for _ in range(parts)]
     p_index = 0
     while rows != []:
         index = randint(0, len(rows)-1)
         part_list[p_index].append(rows.pop(index))
         p_index += 1
-        p_index = p_index%parts
+        p_index = p_index % parts
     return part_list
 
 
 def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
     """
     Return unique values from the column with the given index.
-    
+
     Input:
      * column_index: int
      * data_frame: list[list[DATA]]
-    
+
     Output:
      * unique_values: set
     """
@@ -146,11 +147,11 @@ def get_unique_values(column_index: int, data_frame: DataFrame) -> set:
 def i(column_index: int, data_frame: DataFrame) -> float:
     """
     Entropy of a column.
-    
+
     Input:
      * column_index: int
      * data_frame: list[list[DATA]]
-     
+
     Output:
      * entropy: float
     """
@@ -173,16 +174,18 @@ def i(column_index: int, data_frame: DataFrame) -> float:
     return -sum
 
 
-def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
+def inf(column1_index: int,
+        column2_index: int,
+        data_frame: DataFrame) -> float:
     """
     Entropy of a data frame devided by column with index column1_index.
     Column with column2_index is a column with values.
-    
+
     Input:
      * column1_index: int - A column that divides a data frame
      * column2_index: int - A column with values
      * data_frame: DataFrame
-     
+
     Output:
      * Entropy: float
     """
@@ -200,7 +203,6 @@ def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
 
     elements2 = {}
     for index, element in enumerate(column1):
-        all_elem = 0
         if element in elements2:
             element2 = column2[index]
             if element2 in elements2[element]:
@@ -222,11 +224,12 @@ def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
         temp_sum = 0
         for element2 in elements2[element]:
             values = list(elements2[element].values())
-            values_count  = 0
+            values_count = 0
             for b in values:
                 values_count += b
             prob_temp = elements2[element][element2]/values_count
-            # print(f"{elements2[element][element2]}/{values_count}*log({elements2[element][element2]}/{values_count})", end="+")
+            # print(f"{elements2[element][element2]}/{values_count}* \
+            #     log({elements2[element][element2]}/{values_count})", end="+")
             temp_sum += prob_temp*log(prob_temp)
         # print(")]")
         sum += -temp_sum*prob
@@ -234,19 +237,19 @@ def inf(column1_index: int, column2_index: int, data_frame: DataFrame) -> float:
     return sum
 
 
-def inf_gain(column_index1: int, 
-             column_index2: int, 
+def inf_gain(column_index1: int,
+             column_index2: int,
              data_frame: DataFrame) -> float:
     """
-    Information acquirement of data frame 
+    Information acquirement of data frame
     devided by column with index column1_index.
     Column with column2_index is a column with values.
-    
+
     Input:
      * column1_index: int - A column that divides a data frame
      * column2_index: int - A column with values
      * data_frame: DataFrame
-     
+
     Output:
      * Information acquirement: float
     """
