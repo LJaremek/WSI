@@ -94,7 +94,9 @@ class Network:
         self._list_of_numbers_of_neurons: List[int] = list_of_numbers_of_neurons
 
         for i in range(1, len(self._list_of_numbers_of_neurons)):
-            layer = NeuronLayer(self._list_of_numbers_of_neurons[i], self._list_of_numbers_of_neurons[i-1])
+            layer = NeuronLayer(self._list_of_numbers_of_neurons[i],
+                                self._list_of_numbers_of_neurons[i-1])
+
             self._layers.append(layer)
 
     def feed_forward(self, inputs: List[float]) -> List[float]:

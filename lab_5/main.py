@@ -1,13 +1,48 @@
-# `if __name__ == "__main__":
-#     print("Hello WSI!")
-#     with open("t10k-labels.idx1-ubyte") as file:
-#         for line in file:
-#             print(line)`
-
 import idx2numpy
 import numpy as np
 import matplotlib.pyplot as plt
-file = "data/train-images.idx3-ubyte"
-arr = idx2numpy.convert_from_file(file)
-plt.imshow(arr[302], cmap=plt.cm.binary)
-plt.show()
+
+from network import Network
+
+train_data_file = "dataset/train-images.idx3-ubyte"
+train_data = idx2numpy.convert_from_file(train_data_file)
+train_labl_file = "dataset/train-labels.idx1-ubyte"
+train_labl = idx2numpy.convert_from_file(train_labl_file)
+
+NETWORK_INPUT_SIZE = train_data[0].flatten().size  # number of pixels in photo
+NETWORK_OUTPUT_SIZE = 10  # numbers in <0, 9>
+
+
+def print_number(number: np.array) -> None:
+    for row in number:
+        for el in row:
+            el = round(float(el/255), 1)
+            if el < 0.5:
+                print(".", end=" ")
+            elif 0.5 < el < 1.0:
+                print("x", end=" ")
+            else:
+                print("#", end=" ")
+        print()
+
+
+# print_number(train_data[302])
+# print(train_labl[302])
+# plt.imshow(train_data[302], cmap=plt.cm.binary)
+# plt.show()
+
+def main() -> None:
+    network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
+
+    for index, number in enumerate(train_data):
+        pixels: np.array = number.flatten()/255
+        result: int = int(train_labl[index])
+
+        output = network.feed_forward(pixels)
+
+        print(result == output.index(max(output)),
+              result, output.index(max(output)))
+
+
+if __name__ == "__main__":
+    main()
