@@ -125,6 +125,9 @@ class Network:
 
         return last_outputs
 
+    def get_layer(self, layer_index: int) -> NeuronLayer:
+        return self._layers[layer_index]
+
 
 def main():
     # input
