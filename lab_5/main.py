@@ -40,6 +40,12 @@ def main() -> None:
 
         output = network.feed_forward(pixels)
 
+        w = [0.0] * 10
+        w[result] = 1.0
+
+        cost_errors = network._layers[-1].cost_error(w)
+        print(cost_errors)
+
         print(result == output.index(max(output)),
               result, output.index(max(output)))
 

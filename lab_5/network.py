@@ -51,15 +51,23 @@ class Neuron:
     def __init__(self, number_of_weights: int) -> None:
         self._weights: List[float] = random_numbers(number_of_weights)
         self._bias: float = randint(0, 10)/10
-        self._activiation_function = sigmoid
+        self._activation_function = sigmoid
+        self._output = None
+        self._inputs = None
 
     def calculate(self, inputs: List[float]) -> float:
+        self._inputs = inputs
         sum_output: float = 0.0
         for i in range(len(inputs)):
             sum_output += inputs[i] * self._weights[i]
 
         sum_output += self._bias
-        return self._activiation_function(sum_output)
+        self._output = self._activation_function(sum_output)
+        return self._output
+
+    @property
+    def output(self):
+        return self._output
 
 
 class NeuronLayer:
@@ -81,6 +89,15 @@ class NeuronLayer:
             output.append(self._neurons[i].calculate(inputs))
 
         return output
+
+    def cost_error(self, outputs: List[float]) -> List[float]:
+        cost_output = []
+        for i in range(len(self._neurons)):
+            cost_output.append(
+                (outputs[i] - self._neurons[i].output) ** 2
+            )
+
+        return cost_output
 
     @property
     def number_of_neurons(self) -> int:
