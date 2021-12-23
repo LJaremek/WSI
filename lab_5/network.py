@@ -44,7 +44,7 @@ weights = [ a1b0, a2b0, a3b0 ]
 
 
 def random_numbers(n: int) -> np.array:
-    return uniform(low=0.0, high=1.0, size=(n,))
+    return uniform(low=-1.0, high=1.0, size=(n,))
 
 
 class Neuron:
@@ -101,10 +101,10 @@ class Network:
             self._layers.append(layer)
 
     def feed_forward(self, inputs: List[float]) -> List[float]:
-        last_outputs = self._layers[0].feed_forward(inputs)
+        last_outputs = inputs
 
-        for i in range(1, len(self._list_of_numbers_of_neurons)):
-            last_outputs = self._layers[i-1].feed_forward(last_outputs)
+        for i in range(len(self._layers)):
+            last_outputs = self._layers[i].feed_forward(last_outputs)
 
         return last_outputs
 
