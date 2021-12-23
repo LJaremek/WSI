@@ -5,7 +5,7 @@ from numpy.random import uniform
 from typing import List
 from random import randint
 
-from activation_functions import relu
+from activation_functions import sigmoid
 
 """
 
@@ -51,7 +51,7 @@ class Neuron:
     def __init__(self, number_of_weights: int) -> None:
         self._weights: List[float] = random_numbers(number_of_weights)
         self._bias: float = randint(0, 10)/10
-        self._activiation_function = relu
+        self._activiation_function = sigmoid
 
     def calculate(self, inputs: List[float]) -> float:
         sum_output: float = 0.0
@@ -91,7 +91,8 @@ class Network:
     def __init__(self, list_of_numbers_of_neurons: List[int]) -> None:
 
         self._layers: List[NeuronLayer] = []
-        self._list_of_numbers_of_neurons: List[int] = list_of_numbers_of_neurons
+        self._list_of_numbers_of_neurons: List[int] = \
+            list_of_numbers_of_neurons
 
         for i in range(1, len(self._list_of_numbers_of_neurons)):
             layer = NeuronLayer(self._list_of_numbers_of_neurons[i],

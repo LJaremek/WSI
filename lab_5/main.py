@@ -26,10 +26,10 @@ def print_number(number: np.array) -> None:
         print()
 
 
-# print_number(train_data[302])
-# print(train_labl[302])
-# plt.imshow(train_data[302], cmap=plt.cm.binary)
-# plt.show()
+def show_number(number: np.array) -> None:
+    plt.imshow(number, cmap=plt.cm.binary)
+    plt.show()
+
 
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
