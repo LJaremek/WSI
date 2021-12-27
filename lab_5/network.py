@@ -75,10 +75,10 @@ class Network:
                 delta_weights[layer_index] = delta_weights[layer_index] + delta_weights_backprop[layer_index]
 
         for layer_index in range(len(self.layers)):
-            delta_biases[layer_index] /= len(mini_batch)
+            delta_biases[layer_index] *= 1.0 / len(mini_batch)
             delta_biases[layer_index] *= 0.1
 
-            delta_weights[layer_index] /= len(mini_batch)
+            delta_weights[layer_index] *= 1.0 / len(mini_batch)
             delta_weights[layer_index] *= 0.1
 
         self.update_weights_and_biases(delta_biases, delta_weights)

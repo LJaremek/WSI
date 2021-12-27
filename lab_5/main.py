@@ -40,11 +40,12 @@ def make_output(number: int) -> np.array:
 
 
 def main() -> None:
-    network = Network([NETWORK_INPUT_SIZE, 50, 50, NETWORK_OUTPUT_SIZE])
+    network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
 
-    data = all_data.copy()
+    # data = all_data.copy()
     # np.random.shuffle(data)
-    # data = all_data[:10000]
+
+    data = all_data[:10000]
 
     to_split = int(len(data)*0.8)
     train_data = data[:to_split]
