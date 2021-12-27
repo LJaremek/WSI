@@ -42,42 +42,52 @@ def make_output(number: int) -> np.array:
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
 
-    # data = all_data.copy()
-    # np.random.shuffle(data)
+    data = [(a, b) for a, b in zip(all_data, all_labl)]
+    np.random.shuffle(data)
 
-    data = all_data
-
-    to_split = int(len(data)*0.8)
+    to_split = int(len(data) * 0.8)
     train_data = data[:to_split]
     test_data = data[to_split:]
 
-    BATCH_SIZE = 16
+    number_of_epochs = 50
+    batch_size = 16
 
-    for i in range(0, len(train_data-BATCH_SIZE), BATCH_SIZE):
+    for epoch in range(number_of_epochs):
+        np.random.shuffle(train_data)
 
-        mini_batch: List[Tuple[np.array, np.array]] = []
-        for index, number in enumerate(train_data[i:i + BATCH_SIZE]):
-            pixels: np.array = number.flatten()/255
-            pixels = np.reshape(pixels, (784, 1))
-            result: int = int(all_labl[index])
-            results: np.array = make_output(result)
+        for i in range(0, len(train_data) - batch_size, batch_size):
 
-            mini_batch.append(
-                (pixels, results)
-            )
+            mini_batch: List[Tuple[np.array, np.array]] = []
+            for index, number in enumerate(train_data[i:i + batch_size]):
 
-        network.train(mini_batch)
+                number_pixels, number_label = number
+                pixels: np.array = number_pixels.flatten()/255
+                pixels = np.reshape(pixels, (784, 1))
+                result: int = int(number_label)
+                results: np.array = make_output(result)
 
-    for index, number in enumerate(test_data):
-        pixels: np.array = number.flatten()/255
-        pixels_2 = np.reshape(pixels, (784, 1))
+                mini_batch.append(
+                    (pixels, results)
+                )
 
-        result: int = int(all_labl[index + to_split])
+            network.train(mini_batch)
 
-        output = network.feed_forward(pixels_2)
+        print(f"Epoch {epoch}")
 
-        print(result == output.argmax(),
-              result, output.argmax())
+        good_sum = 0
+        for index, number in enumerate(test_data):
+            number_pixels, number_label = number
+
+            pixels: np.array = number_pixels.flatten()/255
+            pixels_2 = np.reshape(pixels, (784, 1))
+
+            result: int = int(number_label)
+
+            output = network.feed_forward(pixels_2)
+
+            good_sum += result == output.argmax()
+
+        print(f'{good_sum} / {len(test_data)}')
 
 
 if __name__ == "__main__":
