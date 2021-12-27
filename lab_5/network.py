@@ -78,14 +78,22 @@ class Network:
         to_change_biases.insert(0, delta.copy())
         to_change_weights.insert(0, np.dot(delta, self.layers[-2].a.T))
 
-        z = last_layer.z
-
         for l in range(len(self.layers)-2, -1, -1):
-            # TODO !
-            c_d2 = np.dot(self.layers[l+1].weights.T, delta)
+            z = self.layers[l].z
+
+            w1 = self.layers[l+1].weights.T
+            w2 = delta.copy()
+
+            c_d2 = np.dot(w1, w2)
             s_d2 = sigmoid(z)
 
             delta = c_d2 * s_d2
+
+            to_change_biases.insert(0, delta.copy())
+            if l == 0:
+                to_change_weights.insert(0, np.dot(delta, inputs.T))
+            else:
+                to_change_weights.insert(0, np.dot(delta, self.layers[l-1].a.T))
 
     def update_mini_batch(self, mini_batch):
         # TODO
