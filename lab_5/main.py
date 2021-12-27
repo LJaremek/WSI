@@ -40,13 +40,20 @@ def make_output(number: int) -> np.array:
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
 
-    for index, number in enumerate(train_data[:10]):
+    for index, number in enumerate(train_data[:1000]):
         pixels: np.array = number.flatten()/255
         pixels = np.reshape(pixels, (784, 1))
         result: int = int(train_labl[index])
         results: np.array = make_output(result)
 
         network.backprop(pixels, results)
+
+    for index, number in enumerate(train_data[1000:1010]):
+        pixels: np.array = number.flatten()/255
+        pixels = np.reshape(pixels, (784, 1))
+
+        a = network.feed_forward(pixels)
+        print(a)
 
 
 if __name__ == "__main__":

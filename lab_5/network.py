@@ -12,7 +12,7 @@ def random_numbers(n: int) -> np.array:
 
 
 def sigmoid_derivative(x):
-    return sigmoid(x)*(1-sigmoid(x))
+    return sigmoid(x) * (1 - sigmoid(x))
 
 
 def cost_derivative(output_activation: np.array, y: np.array) -> np.array:
@@ -23,7 +23,6 @@ class NeuronLayer:
     def __init__(self,
                  number_of_neurons: int,
                  number_of_input_neurons: int) -> None:
-
         self.number_of_neurons = number_of_neurons
         self.number_of_input_neurons = number_of_input_neurons
 
@@ -78,10 +77,10 @@ class Network:
         to_change_biases.insert(0, delta.copy())
         to_change_weights.insert(0, np.dot(delta, self.layers[-2].a.T))
 
-        for l in range(len(self.layers)-2, -1, -1):
+        for l in range(len(self.layers) - 2, -1, -1):
             z = self.layers[l].z
 
-            w1 = self.layers[l+1].weights.T
+            w1 = self.layers[l + 1].weights.T
             w2 = delta.copy()
 
             c_d2 = np.dot(w1, w2)
@@ -93,7 +92,14 @@ class Network:
             if l == 0:
                 to_change_weights.insert(0, np.dot(delta, inputs.T))
             else:
-                to_change_weights.insert(0, np.dot(delta, self.layers[l-1].a.T))
+                to_change_weights.insert(0, np.dot(delta, self.layers[l - 1].a.T))
+
+        self.update_weights_and_biases(to_change_biases, to_change_weights)
+
+    def update_weights_and_biases(self, delta_biases: List[np.array], delta_weights: List[np.array]):
+        for index, layer in enumerate(self.layers):
+            layer.biases = layer.biases - delta_biases[index]
+            layer.weights = layer.weights - delta_weights[index]
 
     def update_mini_batch(self, mini_batch):
         # TODO
