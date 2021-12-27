@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.random import uniform
-from typing import List
+from typing import List, Tuple
 
 from activation_functions import sigmoid
 
@@ -61,6 +61,25 @@ class Network:
     def get_layer(self, layer_index: int) -> NeuronLayer:
         return self.layers[layer_index]
 
+    def train(self, mini_batch: List[Tuple[np.array, np.array]]):
+        delta_biases = [np.zeros(layer.biases.shape) for layer in self.layers]
+        delta_weights = [np.zeros(layer.weights.shape) for layer in self.layers]
+
+        for sample in mini_batch:
+            x, y = sample
+
+            delta_biases_backprop, delta_weights_backprop = self.backprop(x, y)
+
+            for layer_index in range(len(self.layers)):
+                delta_biases[layer_index] = delta_biases[layer_index] + delta_biases_backprop[layer_index]
+                delta_weights[layer_index] = delta_weights[layer_index] + delta_weights_backprop[layer_index]
+
+        for layer_index in range(len(self.layers)):
+            delta_biases[layer_index] /= len(mini_batch)
+            delta_weights[layer_index] /= len(mini_batch)
+
+        self.update_weights_and_biases(delta_biases, delta_weights)
+
     def backprop(self, inputs: np.array, y: np.array):
         self.feed_forward(inputs)
 
@@ -94,7 +113,7 @@ class Network:
             else:
                 to_change_weights.insert(0, np.dot(delta, self.layers[l - 1].a.T))
 
-        self.update_weights_and_biases(to_change_biases, to_change_weights)
+        return to_change_biases, to_change_weights
 
     def update_weights_and_biases(self, delta_biases: List[np.array], delta_weights: List[np.array]):
         for index, layer in enumerate(self.layers):

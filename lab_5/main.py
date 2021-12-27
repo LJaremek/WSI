@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import idx2numpy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,13 +42,19 @@ def make_output(number: int) -> np.array:
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
 
-    for index, number in enumerate(train_data[:1000]):
-        pixels: np.array = number.flatten()/255
-        pixels = np.reshape(pixels, (784, 1))
-        result: int = int(train_labl[index])
-        results: np.array = make_output(result)
+    for i in range(len(train_data[:1000])):
+        mini_batch: List[Tuple[np.array, np.array]] = []
+        for index, number in enumerate(train_data[i:i+16]):
+            pixels: np.array = number.flatten()/255
+            pixels = np.reshape(pixels, (784, 1))
+            result: int = int(train_labl[index])
+            results: np.array = make_output(result)
 
-        network.backprop(pixels, results)
+            mini_batch.append(
+                (pixels, results)
+            )
+
+        network.train(mini_batch)
 
     for index, number in enumerate(train_data[1000:1010]):
         pixels: np.array = number.flatten()/255
