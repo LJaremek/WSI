@@ -35,6 +35,12 @@ def main() -> None:
         out = network.feed_forward(x)
         print(y[0][0], y[1][0], ' - ', out[0][0], out[1][0])
 
+        index_wyniku = out.argmax()
+        z = np.zeros((2, 1))
+        z[index_wyniku] = 1.0
+
+        print(y[0][0] == z[0][0] and y[1][0] == z[1][0])
+
 
 if __name__ == "__main__":
     main()

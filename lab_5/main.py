@@ -45,7 +45,7 @@ def main() -> None:
     # data = all_data.copy()
     # np.random.shuffle(data)
 
-    data = all_data[:10000]
+    data = all_data
 
     to_split = int(len(data)*0.8)
     train_data = data[:to_split]
