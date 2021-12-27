@@ -27,7 +27,7 @@ class NeuronLayer:
         self.number_of_input_neurons = number_of_input_neurons
 
         self.weights = uniform(low=-1.0, high=1.0, size=(self.number_of_neurons, self.number_of_input_neurons))
-        self.biases = uniform(low=-1.0, high=1.0, size=(self.number_of_neurons, 1))
+        self.biases = uniform(low=-3.0, high=3.0, size=(self.number_of_neurons, 1))
 
         self.z = np.zeros((self.number_of_neurons, 1))
         self.a = np.zeros((self.number_of_neurons, 1))
@@ -76,7 +76,10 @@ class Network:
 
         for layer_index in range(len(self.layers)):
             delta_biases[layer_index] /= len(mini_batch)
+            delta_biases[layer_index] *= 0.1
+
             delta_weights[layer_index] /= len(mini_batch)
+            delta_weights[layer_index] *= 0.1
 
         self.update_weights_and_biases(delta_biases, delta_weights)
 
@@ -119,10 +122,6 @@ class Network:
         for index, layer in enumerate(self.layers):
             layer.biases = layer.biases - delta_biases[index]
             layer.weights = layer.weights - delta_weights[index]
-
-    def update_mini_batch(self, mini_batch):
-        # TODO
-        pass
 
 
 def main():
