@@ -27,7 +27,7 @@ class NeuronLayer:
         self.number_of_input_neurons = number_of_input_neurons
 
         self.weights = uniform(low=-1.0, high=1.0, size=(self.number_of_neurons, self.number_of_input_neurons))
-        self.biases = uniform(low=-3.0, high=3.0, size=(self.number_of_neurons, 1))
+        self.biases = uniform(low=-0.2, high=0.2, size=(self.number_of_neurons, 1))
 
         self.z = np.zeros((self.number_of_neurons, 1))
         self.a = np.zeros((self.number_of_neurons, 1))
@@ -106,7 +106,7 @@ class Network:
             w2 = delta.copy()
 
             c_d2 = np.dot(w1, w2)
-            s_d2 = sigmoid(z)
+            s_d2 = sigmoid_derivative(z)
 
             delta = c_d2 * s_d2
 

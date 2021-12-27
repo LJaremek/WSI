@@ -22,7 +22,7 @@ def main() -> None:
 
     BATCH_SIZE = 4
 
-    for j in range(100):
+    for j in range(100000):
         mini_batch = []
         for i in range(4):
             mini_batch.append(
