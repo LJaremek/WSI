@@ -31,25 +31,22 @@ def show_number(number: np.array) -> None:
     plt.show()
 
 
-def make_output(number: int) -> tuple:
-    return [0.0 if i != number else 1.0 for i in range(10)]
+def make_output(number: int) -> np.array:
+    n = np.zeros((10, 1))
+    n[number][0] = 1.0
+    return n
 
 
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE])
 
-    for index, number in enumerate(train_data):
+    for index, number in enumerate(train_data[:10]):
         pixels: np.array = number.flatten()/255
+        pixels = np.reshape(pixels, (784, 1))
         result: int = int(train_labl[index])
-        results: tuple = make_output(result)
+        results: np.array = make_output(result)
 
-        output = network.feed_forward(pixels)
-
-        cost_errors = network.get_layer(-1).cost_error(results)
-        print(cost_errors)
-
-        print(result == output.index(max(output)),
-              result, output.index(max(output)))
+        network.backprop(pixels, results)
 
 
 if __name__ == "__main__":
