@@ -37,6 +37,10 @@ def sigmoid(x):
     return 1.0 / (1.0 + e**(-x))
 
 
+def sigmoid_derivative(x):
+    return sigmoid(x) * (1 - sigmoid(x))
+
+
 def silu(x: float) -> float:
     return x / (1 + e**(-x))
 
