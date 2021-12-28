@@ -39,6 +39,19 @@ def make_output(number: int) -> np.array:
     return n
 
 
+def draw_frequency_histogram():
+    u = np.unique(all_labels, return_counts=True)
+    data = {str(x): u[1][x] for x in range(10)}
+    names = list(data.keys())
+    values = list(data.values())
+
+    plt.ylabel("Image count")
+    plt.xlabel("Digit class")
+
+    plt.bar(names, values)
+    plt.show()
+
+
 def main() -> None:
     network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE], learning_rate=0.01)
 

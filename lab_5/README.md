@@ -1,7 +1,5 @@
 ## TODO
 - refactor backprop (Maciej)
-- analiza danych (rozproszenie danych) za pomocą histogramu (Maciej)
-- analiza danych (przykladowe wejscie / wyjscie) (4 przyklady) (Maciej)
 - confusion matrix (Lukasz)
 - wyliczanie scorów (f1, accuracy, +jeszcze jeden) (Lukasz)
 - rysowanie wykresu (epoch / score) w matplotlib (+f1, accuracy itp) (training / validation) (Lukasz)
@@ -9,10 +7,6 @@
 
 
 ## TODO Raport
-- Opisać wygląd przykładowej sieci i przeprowadzić wstępną analizę zbioru danych. 
-- Podział obowiązków
-- Dodać do raportu info o inicjowaniu wag / biasów
-
 
 - Porównać dla różnej liczby neuronów ukrytych i różnej liczby warstw. (Przykładowy wygląd sieci)
 - Warto sprawdzić też wpływ współczynnika uczenia i ilości epok na pracę modelu.
