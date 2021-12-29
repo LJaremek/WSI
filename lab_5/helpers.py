@@ -41,3 +41,15 @@ def draw_frequency_histogram(labels):
 
     plt.bar(names, values)
     plt.show()
+
+
+def draw_network_epochs(train_epochs, test_epochs):
+    plt.xticks(range(0, len(train_epochs)))
+
+    plt.plot(train_epochs)
+    plt.plot(test_epochs)
+    plt.title("model accuracy")
+    plt.ylabel("accuracy")
+    plt.xlabel("epoch")
+    plt.legend(["train", "val"], loc="upper left")
+    plt.show()

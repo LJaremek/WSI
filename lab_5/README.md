@@ -1,5 +1,4 @@
 ## TODO
-- rysowanie wykresu (epoch / score) w matplotlib (+f1, accuracy itp) (training / validation) (Maciej)
 - confusion matrix (Lukasz)
 - wyliczanie scorów (f1, accuracy, +jeszcze jeden) (Lukasz)
 - (użyć softmax + relu)

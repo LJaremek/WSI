@@ -151,16 +151,3 @@ class Network:
         for index, layer in enumerate(self._layers):
             layer.set_biases(layer.biases - delta_biases[index])
             layer.set_weights(layer.weights - delta_weights[index])
-
-
-def main() -> None:
-    inputs = uniform(low=0.0, high=1.0, size=(3,))
-    nn = Network([3, 2, 2])
-    outputs = np.zeros(2)
-    outputs[1] = 1.0
-
-    nn.backprop(inputs, outputs)
-
-
-if __name__ == "__main__":
-    main()
