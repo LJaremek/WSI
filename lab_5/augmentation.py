@@ -1,25 +1,23 @@
 from random import randint
 
-from numpy import array
-from numpy import unique
-from numpy import insert, delete
-from numpy import array_equal
-from numpy import flip, fliplr, flipud
+from numpy import (array, array_equal, delete, flip, fliplr, flipud, insert,
+                   unique)
 
-
-image = array([array([0, 0, 0, 0, 0]),
-               array([0, 0, 0, 0, 0]),
-               array([0, 1, 1, 1, 0]),
-               array([0, 1, 0, 1, 0]),
-               array([0, 1, 1, 1, 0]),
-               array([0, 0, 0, 1, 0]),
-               array([0, 1, 1, 1, 0])]
-              )
+image = array(
+    [
+        array([0, 0, 0, 0, 0]),
+        array([0, 0, 0, 0, 0]),
+        array([0, 1, 1, 1, 0]),
+        array([0, 1, 0, 1, 0]),
+        array([0, 1, 1, 1, 0]),
+        array([0, 0, 0, 1, 0]),
+        array([0, 1, 1, 1, 0]),
+    ]
+)
 
 
 def _check_row(image: array, index: int) -> bool:
-    return bool(len(unique(image[index])) == 1
-                and unique(image[index]) == array([0]))
+    return bool(len(unique(image[index])) == 1 and unique(image[index]) == array([0]))
 
 
 def _check_column(image: array, index: int) -> bool:
@@ -32,14 +30,11 @@ def _check_column(image: array, index: int) -> bool:
 def _insert_row(image: array, index: int) -> array:
     if index == -1:
         index = len(image)
-    image = insert(image,
-                   index,
-                   array([0 for _ in range(len(image[0]))]),
-                   axis=0)
+    image = insert(image, index, array([0 for _ in range(len(image[0]))]), axis=0)
 
     if index == 0:
         image = delete(image, -1, axis=0)
-    elif index+1 == len(image):
+    elif index + 1 == len(image):
         image = delete(image, 0, axis=0)
 
     return image
@@ -56,8 +51,7 @@ def _insert_colunn(image: array, index: int) -> array:
     return image
 
 
-def augmentation(images: array,
-                 labels: array) -> array:
+def augmentation(images: array, labels: array) -> array:
     new_images = []
     new_labels = []
     for index in range(len(images)):
@@ -85,23 +79,19 @@ def augmentation(images: array,
 
         los = randint(1, 4)
         if los == 1:
-            while (_check_column(new_image, -1)
-                   and _check_column(new_image, -2)):
+            while _check_column(new_image, -1) and _check_column(new_image, -2):
                 new_image = _insert_colunn(new_image, 0)
 
         if los == 2:
-            while (_check_column(new_image, 0)
-                   and _check_column(new_image, 1)):
+            while _check_column(new_image, 0) and _check_column(new_image, 1):
                 new_image = _insert_colunn(new_image, -1)
 
         if los == 3:
-            while (_check_row(new_image, -1)
-                   and _check_row(new_image, -2)):
+            while _check_row(new_image, -1) and _check_row(new_image, -2):
                 new_image = _insert_row(new_image, 0)
 
         if los == 4:
-            while (_check_row(new_image, 0)
-                   and _check_row(new_image, 1)):
+            while _check_row(new_image, 0) and _check_row(new_image, 1):
                 new_image = _insert_row(new_image, -1)
 
         if not array_equal(image, new_image):
@@ -113,6 +103,7 @@ def augmentation(images: array,
 
 if __name__ == "__main__":
     import idx2numpy
+
     all_images_file = "dataset/train-images.idx3-ubyte"
     all_images = idx2numpy.convert_from_file(all_images_file)
     all_labels_file = "dataset/train-labels.idx1-ubyte"

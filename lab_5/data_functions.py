@@ -5,7 +5,7 @@ from numpy import array
 def print_number(number: array) -> None:
     for row in number:
         for el in row:
-            el = round(float(el/255), 1)
+            el = round(float(el / 255), 1)
             if el < 0.5:
                 print(".", end=" ")
             elif 0.5 < el < 1.0:

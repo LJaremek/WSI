@@ -1,9 +1,10 @@
+from time import perf_counter
 from typing import List, Tuple
 
 import idx2numpy
-import matplotlib.pyplot as plt
 import numpy as np
 
+import helpers
 from network import Network
 
 all_images_file = "dataset/train-images.idx3-ubyte"
@@ -11,56 +12,12 @@ all_images = idx2numpy.convert_from_file(all_images_file)
 all_labels_file = "dataset/train-labels.idx1-ubyte"
 all_labels = idx2numpy.convert_from_file(all_labels_file)
 
-NETWORK_INPUT_SIZE = all_images[0].flatten().size  # number of pixels in photo
-NETWORK_OUTPUT_SIZE = 10  # numbers in <0, 9>
-
-
-def print_number(number: np.array) -> None:
-    for row in number:
-        for el in row:
-            el = round(float(el / 255), 1)
-            if el < 0.5:
-                print(".", end=" ")
-            elif 0.5 < el < 1.0:
-                print("x", end=" ")
-            else:
-                print("#", end=" ")
-        print()
-
-
-# print_number(all_images[13])
-# print_number(np.flipud(all_images[13]))
-# print_number(np.flip(all_images[13]))  # [::-1, ::-1])
-# print(list(all_labels).index(6))
-
-
-def show_number(number: np.array) -> None:
-    plt.imshow(number, cmap=plt.cm.binary)
-    plt.show()
-
-
-def make_output(number: int) -> np.array:
-    n = np.zeros((10, 1))
-    n[number][0] = 1.0
-    return n
-
-
-def draw_frequency_histogram():
-    u = np.unique(all_labels, return_counts=True)
-    data = {str(x): u[1][x] for x in range(10)}
-    names = list(data.keys())
-    values = list(data.values())
-
-    plt.ylabel("Image count")
-    plt.xlabel("Digit class")
-
-    plt.bar(names, values)
-    plt.show()
-
 
 def main() -> None:
-    network = Network([NETWORK_INPUT_SIZE, 50, NETWORK_OUTPUT_SIZE],
-                      learning_rate=0.01)
+    network_input_size = all_images[0].flatten().size  # number of pixels in photo
+    network_output_size = 10  # numbers in <0, 9>
+
+    network = Network([network_input_size, 50, network_output_size], learning_rate=0.1)
 
     data = [(image, label) for image, label in zip(all_images, all_labels)]
     np.random.shuffle(data)
@@ -73,23 +30,27 @@ def main() -> None:
     batch_size = 16
 
     for epoch in range(number_of_epochs):
+        epoch_start = perf_counter()
+        print(f"Epoch {epoch}")
+
         np.random.shuffle(train_data)
 
         for i in range(0, len(train_data) - batch_size, batch_size):
             mini_batch: List[Tuple[np.array, np.array]] = []
-            for index, number in enumerate(train_data[i: i + batch_size]):
 
+            for index, number in enumerate(train_data[i : i + batch_size]):
                 number_pixels, number_label = number
                 pixels: np.array = number_pixels.flatten() / 255
                 pixels = np.reshape(pixels, (784, 1))
                 result: int = int(number_label)
-                results: np.array = make_output(result)
+                results: np.array = helpers.make_output(result)
 
                 mini_batch.append((pixels, results))
 
             network.train(mini_batch)
 
-        print(f"Epoch {epoch}")
+        epoch_end = perf_counter()
+        print(f"Elapsed time: {epoch_end - epoch_start:.2f}")
 
         good_sum = 0
         for index, number in enumerate(test_data):

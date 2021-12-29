@@ -5,8 +5,8 @@ from typing import List, Tuple
 import numpy as np
 from numpy.random import uniform
 
-import helpers
 import activation_functions
+import helpers
 
 
 class NeuronLayer:
@@ -89,7 +89,11 @@ class Network:
         for sample in mini_batch:
             x, y = sample
 
-            delta_biases_backprop, delta_weights_backprop = self.backprop(x, y)
+            errors = self.backprop(x, y)
+            (
+                delta_weights_backprop,
+                delta_biases_backprop,
+            ) = self.get_delta_weights_and_biases_from_errors(x, errors)
 
             for layer_index in range(len(self._layers)):
                 delta_biases[layer_index] += delta_biases_backprop[layer_index]
@@ -104,41 +108,42 @@ class Network:
 
         self.update_weights_and_biases(delta_weights, delta_biases)
 
-    def backprop(self, inputs: np.array, y: np.array) -> Tuple[List[np.array], List[np.array]]:
+    def backprop(self, inputs: np.array, y: np.array) -> List[np.array]:
         self.feed_forward(inputs)
         last_layer = self._layers[-1]
 
-        c_d = helpers.cost_derivative(last_layer.a, y)
-        s_d = activation_functions.sigmoid_derivative(last_layer.z)
+        cost_derivative = helpers.cost_derivative(last_layer.a, y)
+        sigmoid_derivative = activation_functions.sigmoid_derivative(last_layer.z)
 
+        errors = []
+        delta: np.array = cost_derivative * sigmoid_derivative
+        errors.insert(0, delta)
+
+        for layer_index in range(len(self._layers) - 2, -1, -1):
+            cost_derivative = np.dot(self._layers[layer_index + 1].weights.T, delta)
+            sigmoid_derivative = activation_functions.sigmoid_derivative(
+                self._layers[layer_index].z
+            )
+
+            delta = cost_derivative * sigmoid_derivative
+            errors.insert(0, delta)
+
+        return errors
+
+    def get_delta_weights_and_biases_from_errors(self, inputs: np.array, errors: List[np.array]):
         to_change_biases = list()
         to_change_weights = list()
 
-        delta: np.array = c_d * s_d
-
-        to_change_biases.insert(0, delta.copy())
-        to_change_weights.insert(0, np.dot(delta, self._layers[-2].a.T))
-
-        for layer_index in range(len(self._layers) - 2, -1, -1):
-            z = self._layers[layer_index].z
-
-            w1 = self._layers[layer_index + 1].weights.T
-            w2 = delta.copy()
-
-            c_d2 = np.dot(w1, w2)
-            s_d2 = activation_functions.sigmoid_derivative(z)
-
-            delta = c_d2 * s_d2
-
+        for layer_index in range(len(self._layers) - 1, -1, -1):
+            delta = errors[layer_index]
             to_change_biases.insert(0, delta.copy())
-            if layer_index == 0:
-                to_insert = np.dot(delta, inputs.T)
-                to_change_weights.insert(0, to_insert)
-            else:
-                to_insert = np.dot(delta, self._layers[layer_index - 1].a.T)
-                to_change_weights.insert(0, to_insert)
 
-        return to_change_biases, to_change_weights
+            if layer_index == 0:
+                to_change_weights.insert(0, np.dot(delta, inputs.T))
+            else:
+                to_change_weights.insert(0, np.dot(delta, self._layers[layer_index - 1].a.T))
+
+        return to_change_weights, to_change_biases
 
     def update_weights_and_biases(
         self, delta_weights: List[np.array], delta_biases: List[np.array]

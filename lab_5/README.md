@@ -1,14 +1,13 @@
 ## TODO
-- refactor backprop (Maciej)
+- rysowanie wykresu (epoch / score) w matplotlib (+f1, accuracy itp) (training / validation) (Maciej)
 - confusion matrix (Lukasz)
 - wyliczanie scorów (f1, accuracy, +jeszcze jeden) (Lukasz)
-- rysowanie wykresu (epoch / score) w matplotlib (+f1, accuracy itp) (training / validation) (Lukasz)
 - (użyć softmax + relu)
 
 
 ## TODO Raport
 
-- Porównać dla różnej liczby neuronów ukrytych i różnej liczby warstw. (Przykładowy wygląd sieci)
+- Porównać dla różnej liczby neuronów ukrytych i różnej liczby warstw.
 - Warto sprawdzić też wpływ współczynnika uczenia i ilości epok na pracę modelu.
 - Sprawdzić wpływ współczynnika nauki sieci na model
 - posortowanie wględem klasy i sprawdzenie wyników
