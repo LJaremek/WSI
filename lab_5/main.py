@@ -17,9 +17,11 @@ test_images = idx2numpy.convert_from_file(test_images_file)
 test_labels_file = "dataset/t10k-labels.idx1-ubyte"
 test_labels = idx2numpy.convert_from_file(test_labels_file)
 
+LIST_MATRIX = List[List[int]]
 
-def create_confusion_matrix(network: Network, data, classes) -> np.array:
-    confusion_matrix = np.zeros((len(classes), len(classes)))
+
+def create_confusion_matrix(network: Network, data) -> LIST_MATRIX:
+    confusion_matrix = [[0 for _ in range(10)] for _ in range(10)]
 
     for _, number in enumerate(data):
         pixels, number_label = number
@@ -30,53 +32,50 @@ def create_confusion_matrix(network: Network, data, classes) -> np.array:
     return confusion_matrix
 
 
-def create_measurements(matrix: np.array) -> dict:
+def create_measurements(matrix: LIST_MATRIX) -> dict:
     measurements = {}
     for number in range(10):
         measurements[number] = {"tp": 0, "tn": 0, "fn": 0, "fp": 0}
 
     for number in range(10):
         measurements[number]["tp"] = matrix[number][number]
-        measurements[number]["tn"] = sum(
-            [row[i] for i, row in enumerate(matrix) if i != number]
-        )
+        measurements[number]["tn"] = sum([row[i] for i, row in enumerate(matrix) if i != number])
         measurements[number]["fp"] = sum(
             [row[number] for i, row in enumerate(matrix) if i != number]
         )
-        # TODO
-        # measurements[number]["fn"] = sum(matrix[number][:number] + matrix[number][number + 1 :])
+        measurements[number]["fn"] = sum(matrix[number][:number] + matrix[number][number + 1 :])
 
     return measurements
 
 
 def get_measurements(
-    confusion_matrix: dict,
+    measurement: dict,
 ) -> Tuple[float, float, float, float]:
-    for key in confusion_matrix:
+    for key in measurement:
         try:
-            recall = sum([confusion_matrix[key]["tp"]]) / (
-                sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fn"]])
+            recall = sum([measurement[key]["tp"]]) / (
+                sum([measurement[key]["tp"]]) + sum([measurement[key]["fn"]])
             )
         except ZeroDivisionError:
             recall = -1
         try:
-            fallout = sum([confusion_matrix[key]["fp"]]) / (
-                sum([confusion_matrix[key]["fp"]]) + sum([confusion_matrix[key]["tn"]])
+            fallout = sum([measurement[key]["fp"]]) / (
+                sum([measurement[key]["fp"]]) + sum([measurement[key]["tn"]])
             )
         except ZeroDivisionError:
             fallout = -1
         try:
-            precision = sum([confusion_matrix[key]["tp"]]) / (
-                sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fp"]])
+            precision = sum([measurement[key]["tp"]]) / (
+                sum([measurement[key]["tp"]]) + sum([measurement[key]["fp"]])
             )
         except ZeroDivisionError:
             precision = -1
         try:
-            accuracy = (sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["tn"]])) / (
-                sum([confusion_matrix[key]["tp"]])
-                + sum([confusion_matrix[key]["fn"]])
-                + sum([confusion_matrix[key]["tn"]])
-                + sum([confusion_matrix[key]["fn"]])
+            accuracy = (sum([measurement[key]["tp"]]) + sum([measurement[key]["tn"]])) / (
+                sum([measurement[key]["tp"]])
+                + sum([measurement[key]["fn"]])
+                + sum([measurement[key]["tn"]])
+                + sum([measurement[key]["fn"]])
             )
         except ZeroDivisionError:
             accuracy = -1
@@ -135,8 +134,8 @@ def main() -> None:
         epoch_end = perf_counter()
         print(f"Elapsed time: {epoch_end - epoch_start:.2f}")
 
-        test_confusion_matrix = create_confusion_matrix(network, test_data, all_classes)
-        train_confusion_matrix = create_confusion_matrix(network, train_data, all_classes)
+        test_confusion_matrix = create_confusion_matrix(network, test_data)
+        train_confusion_matrix = create_confusion_matrix(network, train_data)
 
         test_measurement = create_measurements(test_confusion_matrix)
         train_measurement = create_measurements(train_confusion_matrix)
