@@ -13,12 +13,15 @@ all_labels_file = "dataset/train-labels.idx1-ubyte"
 all_labels = idx2numpy.convert_from_file(all_labels_file)
 
 
-def calculate(network: Network, data):
+def calculate(network: Network, data, data_type: str, matrix: list = None):
     good_sum = 0
     for index, number in enumerate(data):
         pixels, number_label = number
         output = network.feed_forward(pixels)
         good_sum += number_label == output.argmax()
+        if data_type == "train":
+            result: int = int(number_label)
+            matrix[result][output.argmax()] += 1
 
     return good_sum
 
@@ -47,6 +50,8 @@ def main() -> None:
     epochs_test_data = []
     epochs_train_data = []
 
+    matrix = [[0 for _ in range(10)] for _ in range(10)]
+
     for epoch in range(number_of_epochs):
         epoch_start = perf_counter()
         print(f"Epoch {epoch}")
@@ -66,8 +71,67 @@ def main() -> None:
         epoch_end = perf_counter()
         print(f"Elapsed time: {epoch_end - epoch_start:.2f}")
 
-        test_ok = calculate(network, test_data)
-        train_ok = calculate(network, train_data)
+        test_ok = calculate(network, test_data, "test")
+        train_ok = calculate(network, train_data, "train", matrix)
+
+        confusion_matrix = {}
+        for number in range(10):
+            confusion_matrix[number] = {"tp": 0,
+                                        "tn": 0,
+                                        "fn": 0,
+                                        "fp": 0}
+        
+        for number in range(10):
+            confusion_matrix[number]["tp"] = matrix[number][number]
+            confusion_matrix[number]["tn"] = sum([row[i]
+                                                  for i, row in enumerate(matrix)
+                                                  if i != number])
+            confusion_matrix[number]["fp"] = sum([row[number]
+                                                  for i, row in enumerate(matrix)
+                                                  if i != number])
+            confusion_matrix[number]["fn"] = sum(matrix[number][:number] +
+                                                 matrix[number][number+1:])
+
+        for key in confusion_matrix:
+            print(key, confusion_matrix[key])
+
+            try:
+                tpr = sum([confusion_matrix[key]["tp"]]) / (
+                      sum([confusion_matrix[key]["tp"]]) +
+                      sum([confusion_matrix[key]["fn"]])
+                                                           )
+            except ZeroDivisionError:
+                tpr = -1
+            try:
+                fpr = sum([confusion_matrix[key]["fp"]]) / (
+                      sum([confusion_matrix[key]["fp"]]) +
+                      sum([confusion_matrix[key]["tn"]])
+                                                           )
+            except ZeroDivisionError:
+                fpr = -1
+            try:
+                ppv = sum([confusion_matrix[key]["tp"]]) / (
+                      sum([confusion_matrix[key]["tp"]]) +
+                      sum([confusion_matrix[key]["fp"]])
+                                                           )
+            except ZeroDivisionError:
+                ppv = -1
+            try:
+                acc = ((sum([confusion_matrix[key]["tp"]]) +
+                        sum([confusion_matrix[key]["tn"]])) / (
+                            sum([confusion_matrix[key]["tp"]]) +
+                            sum([confusion_matrix[key]["fn"]]) +
+                            sum([confusion_matrix[key]["tn"]]) +
+                            sum([confusion_matrix[key]["fn"]])
+                                                              )
+                       )
+            except ZeroDivisionError:
+                acc = -1
+
+        print("\nTPR:", tpr)
+        print("FPR:", fpr)
+        print("PPV:", ppv)
+        print("Acc:", acc)
 
         epochs_train_data.append(train_ok / len(train_data))
         epochs_test_data.append(test_ok / len(test_data))
