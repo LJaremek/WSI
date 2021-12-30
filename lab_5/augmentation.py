@@ -1,7 +1,6 @@
 from random import randint
 
-from numpy import (array, array_equal, delete, flip, fliplr, flipud, insert,
-                   unique)
+from numpy import array, array_equal, delete, flip, fliplr, flipud, insert, unique
 
 image = array(
     [

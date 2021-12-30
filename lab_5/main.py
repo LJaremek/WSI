@@ -38,8 +38,7 @@ def main() -> None:
     # numbers in <0, 9>
     network_output_size = 10
 
-    network = Network([network_input_size, 10, 10, network_output_size],
-                      learning_rate=0.1)
+    network = Network([network_input_size, 10, 10, network_output_size], learning_rate=0.1)
 
     train_data = [
         ((image.flatten() / 255).reshape((network_input_size, 1)), int(label))
@@ -70,7 +69,7 @@ def main() -> None:
         for i in range(0, len(train_data) - batch_size, batch_size):
             mini_batch: List[Tuple[np.array, np.array]] = []
 
-            for index, number in enumerate(train_data[i: i + batch_size]):
+            for index, number in enumerate(train_data[i : i + batch_size]):
                 pixels, number_label = number
                 results: np.array = helpers.make_output(number_label)
                 mini_batch.append((pixels, results))
@@ -85,66 +84,55 @@ def main() -> None:
 
         confusion_matrix = {}
         for number in range(10):
-            confusion_matrix[number] = {"tp": 0,
-                                        "tn": 0,
-                                        "fn": 0,
-                                        "fp": 0}
+            confusion_matrix[number] = {"tp": 0, "tn": 0, "fn": 0, "fp": 0}
 
         for number in range(10):
             confusion_matrix[number]["tp"] = matrix[number][number]
-            confusion_matrix[number]["tn"] = (
-                sum([row[i]
-                     for i, row in enumerate(matrix)
-                     if i != number])
+            confusion_matrix[number]["tn"] = sum(
+                [row[i] for i, row in enumerate(matrix) if i != number]
             )
-            confusion_matrix[number]["fp"] = (
-                sum([row[number]
-                     for i, row in enumerate(matrix)
-                     if i != number])
+            confusion_matrix[number]["fp"] = sum(
+                [row[number] for i, row in enumerate(matrix) if i != number]
             )
-            confusion_matrix[number]["fn"] = sum(matrix[number][:number] +
-                                                 matrix[number][number+1:])
+            confusion_matrix[number]["fn"] = sum(
+                matrix[number][:number] + matrix[number][number + 1 :]
+            )
 
         for key in confusion_matrix:
-            print(key, confusion_matrix[key])
+            try:
+                recall = sum([confusion_matrix[key]["tp"]]) / (
+                    sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fn"]])
+                )
+            except ZeroDivisionError:
+                recall = -1
+            try:
+                fallout = sum([confusion_matrix[key]["fp"]]) / (
+                    sum([confusion_matrix[key]["fp"]]) + sum([confusion_matrix[key]["tn"]])
+                )
+            except ZeroDivisionError:
+                fallout = -1
+            try:
+                precision = sum([confusion_matrix[key]["tp"]]) / (
+                    sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fp"]])
+                )
+            except ZeroDivisionError:
+                precision = -1
+            try:
+                accuracy = (sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["tn"]])) / (
+                    sum([confusion_matrix[key]["tp"]])
+                    + sum([confusion_matrix[key]["fn"]])
+                    + sum([confusion_matrix[key]["tn"]])
+                    + sum([confusion_matrix[key]["fn"]])
+                )
+            except ZeroDivisionError:
+                accuracy = -1
 
-            try:
-                tpr = sum([confusion_matrix[key]["tp"]]) / (
-                      sum([confusion_matrix[key]["tp"]]) +
-                      sum([confusion_matrix[key]["fn"]])
-                                                           )
-            except ZeroDivisionError:
-                tpr = -1
-            try:
-                fpr = sum([confusion_matrix[key]["fp"]]) / (
-                      sum([confusion_matrix[key]["fp"]]) +
-                      sum([confusion_matrix[key]["tn"]])
-                                                           )
-            except ZeroDivisionError:
-                fpr = -1
-            try:
-                ppv = sum([confusion_matrix[key]["tp"]]) / (
-                      sum([confusion_matrix[key]["tp"]]) +
-                      sum([confusion_matrix[key]["fp"]])
-                                                           )
-            except ZeroDivisionError:
-                ppv = -1
-            try:
-                acc = ((sum([confusion_matrix[key]["tp"]]) +
-                        sum([confusion_matrix[key]["tn"]])) / (
-                            sum([confusion_matrix[key]["tp"]]) +
-                            sum([confusion_matrix[key]["fn"]]) +
-                            sum([confusion_matrix[key]["tn"]]) +
-                            sum([confusion_matrix[key]["fn"]])
-                                                              )
-                       )
-            except ZeroDivisionError:
-                acc = -1
+        print("TPR:", recall)
+        print("FPR:", fallout)
+        print("PPV:", precision)
+        print("Acc:", accuracy)
 
-        print("\nTPR:", tpr)
-        print("FPR:", fpr)
-        print("PPV:", ppv)
-        print("Acc:", acc)
+        epochs_train_data.append((recall, fallout, precision, accuracy))
 
         epochs_train_data.append(train_ok / len(train_data))
         epochs_test_data.append(test_ok / len(test_data))

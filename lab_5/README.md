@@ -1,8 +1,6 @@
 ## TODO
-- confusion matrix (Lukasz)
-- wyliczanie scorów (f1, accuracy, +jeszcze jeden) (Lukasz)
 - (użyć softmax + relu)
-
+- rysowanie 4 wykresów jako jeden (accuracy, cost, f1, )
 
 ## TODO Raport
 
@@ -15,9 +13,6 @@
 
 - Pokazać jakie przykłady ze zbioru MNIST zostały sklasyfikowane poprawnie a jakie nie (dosłownie kilka obrazów np. że cyfry 1 i 7 są błędne albo że 2 jest wykrywane poprawnie).
 - Sprawdzić, które przykłady się źle klasyfikują i co może być tego powodem
-- Macierz pomyłek i miarach jakości klasyfikacji.
-
-
 
 ## Dodatkowo
 - keras / pytorch
