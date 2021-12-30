@@ -151,3 +151,9 @@ class Network:
         for index, layer in enumerate(self._layers):
             layer.set_biases(layer.biases - delta_biases[index])
             layer.set_weights(layer.weights - delta_weights[index])
+
+    def cost(self, y: np.array):
+        return 0.5 * (y - self._layers[-1].a) ** 2
+
+    def final_cost(self, y: np.array):
+        return sum(x for x in self.cost(y))

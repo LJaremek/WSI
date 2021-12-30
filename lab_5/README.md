@@ -1,6 +1,5 @@
 ## TODO
 - (użyć softmax + relu)
-- rysowanie 4 wykresów jako jeden (accuracy, cost, f1, )
 
 ## TODO Raport
 

@@ -20,16 +20,20 @@ test_labels = idx2numpy.convert_from_file(test_labels_file)
 LIST_MATRIX = List[List[int]]
 
 
-def create_confusion_matrix(network: Network, data) -> LIST_MATRIX:
+def create_confusion_matrix_and_cost(network: Network, data) -> Tuple[LIST_MATRIX, float]:
     confusion_matrix = [[0 for _ in range(10)] for _ in range(10)]
-
+    cost_sum = 0
     for _, number in enumerate(data):
         pixels, number_label = number
         output = network.feed_forward(pixels)
         result: int = int(number_label)
+        results: np.array = helpers.make_output(number_label)
+        cost_sum += network.final_cost(results)
+
         confusion_matrix[result][output.argmax()] += 1
 
-    return confusion_matrix
+    cost = cost_sum / len(data)
+    return confusion_matrix, cost
 
 
 def create_measurements(matrix: LIST_MATRIX) -> dict:
@@ -99,7 +103,9 @@ def main() -> None:
     # numbers in <0, 9>
     network_output_size = 10
 
-    network = Network([network_input_size, 25, network_output_size], learning_rate=0.1)
+    learning_rate = 0.1
+
+    network = Network([network_input_size, 5, network_output_size], learning_rate=learning_rate)
 
     train_data = prepare_data(all_images, all_labels)
     np.random.shuffle(train_data)
@@ -112,6 +118,7 @@ def main() -> None:
 
     parameters = ["recall", "fallout", "precision", "accuracy"]
     all_measurements = {parameter: {"train": [], "test": []} for parameter in parameters}
+    all_measurements["cost"] = {"train": [], "test": []}
 
     for epoch in range(number_of_epochs):
         epoch_start = perf_counter()
@@ -132,8 +139,11 @@ def main() -> None:
         epoch_end = perf_counter()
         print(f"Elapsed time: {epoch_end - epoch_start:.2f}")
 
-        test_confusion_matrix = create_confusion_matrix(network, test_data)
-        train_confusion_matrix = create_confusion_matrix(network, train_data)
+        test_confusion_matrix, cost_test = create_confusion_matrix_and_cost(network, test_data)
+        train_confusion_matrix, cost_train = create_confusion_matrix_and_cost(network, train_data)
+
+        all_measurements["cost"]["train"].append(cost_train)
+        all_measurements["cost"]["test"].append(cost_test)
 
         test_measurement = create_measurements(test_confusion_matrix)
         train_measurement = create_measurements(train_confusion_matrix)
@@ -147,7 +157,7 @@ def main() -> None:
 
         print(all_measurements)
 
-    helpers.draw_network_epochs(all_measurements)
+    helpers.draw_network_epochs(all_measurements, learning_rate)
 
 
 if __name__ == "__main__":
