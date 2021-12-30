@@ -43,13 +43,37 @@ def draw_frequency_histogram(labels):
     plt.show()
 
 
-def draw_network_epochs(train_epochs, test_epochs):
-    plt.xticks(range(0, len(train_epochs)))
+def draw_network_epochs(measurements):
+    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    fig.suptitle('Sharing x per column, y per row')
 
-    plt.plot(train_epochs)
-    plt.plot(test_epochs)
-    plt.title("model accuracy")
-    plt.ylabel("accuracy")
-    plt.xlabel("epoch")
-    plt.legend(["train", "val"], loc="upper left")
+    ((ax1, ax2), (ax3, ax4)) = axes
+
+    epochs = len(measurements["accuracy"]["train"])
+    plt.setp(axes, xticks=range(0, epochs))
+
+    ax1.title.set_text("accuracy")
+    ax1.legend(["train", "val"], loc="upper left")
+    ax1.plot(measurements["accuracy"]["train"])
+    ax1.plot(measurements["accuracy"]["test"])
+
+    ax2.title.set_text("recall")
+    ax2.legend(["train", "val"], loc="upper left")
+    ax2.plot(measurements["recall"]["train"])
+    ax2.plot(measurements["recall"]["test"])
+
+    ax3.title.set_text("recall")
+    ax3.legend(["train", "val"], loc="upper left")
+    ax3.plot(measurements["recall"]["train"])
+    ax3.plot(measurements["recall"]["test"])
+
+    ax4.title.set_text("recall")
+    ax4.legend(["train", "val"], loc="upper left")
+    ax4.plot(measurements["recall"]["train"])
+    ax4.plot(measurements["recall"]["test"])
+
+    for ax in fig.get_axes():
+        ax.label_outer()
+
+    plt.title("")
     plt.show()

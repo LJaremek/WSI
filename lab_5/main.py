@@ -99,7 +99,7 @@ def main() -> None:
     # numbers in <0, 9>
     network_output_size = 10
 
-    network = Network([network_input_size, 10, 10, network_output_size], learning_rate=0.1)
+    network = Network([network_input_size, 25, network_output_size], learning_rate=0.1)
 
     train_data = prepare_data(all_images, all_labels)
     np.random.shuffle(train_data)
@@ -107,10 +107,8 @@ def main() -> None:
     test_data = prepare_data(test_images, test_labels)
     np.random.shuffle(test_data)
 
-    number_of_epochs = 20
+    number_of_epochs = 5
     batch_size = 16
-
-    all_classes = [f"{x}" for x in range(10)]
 
     parameters = ["recall", "fallout", "precision", "accuracy"]
     all_measurements = {parameter: {"train": [], "test": []} for parameter in parameters}
@@ -149,7 +147,7 @@ def main() -> None:
 
         print(all_measurements)
 
-    # helpers.draw_network_epochs()
+    helpers.draw_network_epochs(all_measurements)
 
 
 if __name__ == "__main__":
