@@ -18,17 +18,78 @@ test_labels_file = "dataset/t10k-labels.idx1-ubyte"
 test_labels = idx2numpy.convert_from_file(test_labels_file)
 
 
-def calculate(network: Network, data, data_type: str, matrix: list = None):
+def calculate(network: Network,
+              data,
+              matrix: list) -> int:
     good_sum = 0
-    for index, number in enumerate(data):
+    for _, number in enumerate(data):
         pixels, number_label = number
         output = network.feed_forward(pixels)
         good_sum += number_label == output.argmax()
-        if data_type == "train":
-            result: int = int(number_label)
-            matrix[result][output.argmax()] += 1
+
+        result: int = int(number_label)
+        matrix[result][output.argmax()] += 1
 
     return good_sum
+
+
+def make_confusion_matrix(matrix) -> dict:
+    confusion_matrix = {}
+    for number in range(10):
+        confusion_matrix[number] = {"tp": 0, "tn": 0, "fn": 0, "fp": 0}
+
+    for number in range(10):
+        confusion_matrix[number]["tp"] = matrix[number][number]
+        confusion_matrix[number]["tn"] = sum(
+            [row[i] for i, row in enumerate(matrix) if i != number]
+        )
+        confusion_matrix[number]["fp"] = sum(
+            [row[number] for i, row in enumerate(matrix) if i != number]
+        )
+        confusion_matrix[number]["fn"] = sum(
+            matrix[number][:number] + matrix[number][number + 1:]
+        )
+
+    return confusion_matrix
+
+
+def get_recall_fallout_precision_accuracy(
+                                          confusion_matrix: dict
+                                         ) -> Tuple[float, float, float, float]:
+    for key in confusion_matrix:
+        try:
+            recall = sum([confusion_matrix[key]["tp"]]) / (
+                sum([confusion_matrix[key]["tp"]]) +
+                sum([confusion_matrix[key]["fn"]])
+            )
+        except ZeroDivisionError:
+            recall = -1
+        try:
+            fallout = sum([confusion_matrix[key]["fp"]]) / (
+                sum([confusion_matrix[key]["fp"]]) +
+                sum([confusion_matrix[key]["tn"]])
+            )
+        except ZeroDivisionError:
+            fallout = -1
+        try:
+            precision = sum([confusion_matrix[key]["tp"]]) / (
+                sum([confusion_matrix[key]["tp"]]) +
+                sum([confusion_matrix[key]["fp"]])
+            )
+        except ZeroDivisionError:
+            precision = -1
+        try:
+            accuracy = (sum([confusion_matrix[key]["tp"]]) +
+                        sum([confusion_matrix[key]["tn"]])) / (
+                sum([confusion_matrix[key]["tp"]])
+                + sum([confusion_matrix[key]["fn"]])
+                + sum([confusion_matrix[key]["tn"]])
+                + sum([confusion_matrix[key]["fn"]])
+            )
+        except ZeroDivisionError:
+            accuracy = -1
+
+    return recall, fallout, precision, accuracy
 
 
 def main() -> None:
@@ -38,7 +99,8 @@ def main() -> None:
     # numbers in <0, 9>
     network_output_size = 10
 
-    network = Network([network_input_size, 10, 10, network_output_size], learning_rate=0.1)
+    network = Network([network_input_size, 10, 10, network_output_size],
+                      learning_rate=0.1)
 
     train_data = [
         ((image.flatten() / 255).reshape((network_input_size, 1)), int(label))
@@ -58,7 +120,10 @@ def main() -> None:
     epochs_test_data = []
     epochs_train_data = []
 
-    matrix = [[0 for _ in range(10)] for _ in range(10)]
+    train_matrix, test_matrix = [
+                                    [[0 for _ in range(10)] for _ in range(10)]
+                                    for _ in range(2)
+                                ]
 
     for epoch in range(number_of_epochs):
         epoch_start = perf_counter()
@@ -69,7 +134,7 @@ def main() -> None:
         for i in range(0, len(train_data) - batch_size, batch_size):
             mini_batch: List[Tuple[np.array, np.array]] = []
 
-            for index, number in enumerate(train_data[i : i + batch_size]):
+            for _, number in enumerate(train_data[i: i + batch_size]):
                 pixels, number_label = number
                 results: np.array = helpers.make_output(number_label)
                 mini_batch.append((pixels, results))
@@ -79,66 +144,35 @@ def main() -> None:
         epoch_end = perf_counter()
         print(f"Elapsed time: {epoch_end - epoch_start:.2f}")
 
-        test_ok = calculate(network, test_data, "test")
-        train_ok = calculate(network, train_data, "train", matrix)
+        test_ok = calculate(network, test_data, test_matrix)
+        train_ok = calculate(network, train_data, train_matrix)
 
-        confusion_matrix = {}
-        for number in range(10):
-            confusion_matrix[number] = {"tp": 0, "tn": 0, "fn": 0, "fp": 0}
+        test_confusion_matrix = make_confusion_matrix(test_matrix)
+        train_confusion_matrix = make_confusion_matrix(train_matrix)
 
-        for number in range(10):
-            confusion_matrix[number]["tp"] = matrix[number][number]
-            confusion_matrix[number]["tn"] = sum(
-                [row[i] for i, row in enumerate(matrix) if i != number]
-            )
-            confusion_matrix[number]["fp"] = sum(
-                [row[number] for i, row in enumerate(matrix) if i != number]
-            )
-            confusion_matrix[number]["fn"] = sum(
-                matrix[number][:number] + matrix[number][number + 1 :]
-            )
+        test_paremeters = (
+            get_recall_fallout_precision_accuracy(test_confusion_matrix)
+        )
+        train_paremeters = (
+            get_recall_fallout_precision_accuracy(train_confusion_matrix)
+        )
 
-        for key in confusion_matrix:
-            try:
-                recall = sum([confusion_matrix[key]["tp"]]) / (
-                    sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fn"]])
-                )
-            except ZeroDivisionError:
-                recall = -1
-            try:
-                fallout = sum([confusion_matrix[key]["fp"]]) / (
-                    sum([confusion_matrix[key]["fp"]]) + sum([confusion_matrix[key]["tn"]])
-                )
-            except ZeroDivisionError:
-                fallout = -1
-            try:
-                precision = sum([confusion_matrix[key]["tp"]]) / (
-                    sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["fp"]])
-                )
-            except ZeroDivisionError:
-                precision = -1
-            try:
-                accuracy = (sum([confusion_matrix[key]["tp"]]) + sum([confusion_matrix[key]["tn"]])) / (
-                    sum([confusion_matrix[key]["tp"]])
-                    + sum([confusion_matrix[key]["fn"]])
-                    + sum([confusion_matrix[key]["tn"]])
-                    + sum([confusion_matrix[key]["fn"]])
-                )
-            except ZeroDivisionError:
-                accuracy = -1
+        parameters = ["recall   ", "fallout   ", "precision", "accuracy"]
+        print("PARAM\t\tTRAIN\tTEST")
+        for index, name in enumerate(parameters):
+            print(name,
+                  round(train_paremeters[index], 2),
+                  round(test_paremeters[index], 2),
+                  sep="\t"
+                  )
 
-        print("TPR:", recall)
-        print("FPR:", fallout)
-        print("PPV:", precision)
-        print("Acc:", accuracy)
-
-        epochs_train_data.append((recall, fallout, precision, accuracy))
+        # epochs_train_data.append((recall, fallout, precision, accuracy))
 
         epochs_train_data.append(train_ok / len(train_data))
         epochs_test_data.append(test_ok / len(test_data))
 
         msg = f"Train: {train_ok} / {len(train_data)} |"
-        msg += f" Test: {test_ok} / {len(test_data)}"
+        msg += f" Test: {test_ok} / {len(test_data)}\n"
         print(msg)
 
     helpers.draw_network_epochs(epochs_train_data, epochs_test_data)
