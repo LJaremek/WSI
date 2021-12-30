@@ -12,6 +12,11 @@ all_images = idx2numpy.convert_from_file(all_images_file)
 all_labels_file = "dataset/train-labels.idx1-ubyte"
 all_labels = idx2numpy.convert_from_file(all_labels_file)
 
+test_images_file = "dataset/t10k-images.idx3-ubyte"
+test_images = idx2numpy.convert_from_file(test_images_file)
+test_labels_file = "dataset/t10k-labels.idx1-ubyte"
+test_labels = idx2numpy.convert_from_file(test_labels_file)
+
 
 def calculate(network: Network, data, data_type: str, matrix: list = None):
     good_sum = 0
@@ -27,22 +32,26 @@ def calculate(network: Network, data, data_type: str, matrix: list = None):
 
 
 def main() -> None:
-    network_input_size = all_images[0].flatten().size  # number of pixels in photo
-    network_output_size = 10  # numbers in <0, 9>
+    # number of pixels in photo
+    network_input_size = all_images[0].flatten().size
 
-    network = Network([network_input_size, 10, 10, network_output_size], learning_rate=0.1)
+    # numbers in <0, 9>
+    network_output_size = 10
 
-    data = [
+    network = Network([network_input_size, 10, 10, network_output_size],
+                      learning_rate=0.1)
+
+    train_data = [
         ((image.flatten() / 255).reshape((network_input_size, 1)), int(label))
         for image, label in zip(all_images, all_labels)
     ]
+    np.random.shuffle(train_data)
 
-    # data = sorted(data, key=lambda x: x[1])
-    np.random.shuffle(data)
-
-    to_split = int(len(data) * 0.8)
-    train_data = data[:to_split]
-    test_data = data[to_split:]
+    test_data = [
+        ((image.flatten() / 255).reshape((network_input_size, 1)), int(label))
+        for image, label in zip(test_images, test_labels)
+    ]
+    np.random.shuffle(test_data)
 
     number_of_epochs = 20
     batch_size = 16
@@ -61,7 +70,7 @@ def main() -> None:
         for i in range(0, len(train_data) - batch_size, batch_size):
             mini_batch: List[Tuple[np.array, np.array]] = []
 
-            for index, number in enumerate(train_data[i : i + batch_size]):
+            for index, number in enumerate(train_data[i: i + batch_size]):
                 pixels, number_label = number
                 results: np.array = helpers.make_output(number_label)
                 mini_batch.append((pixels, results))
@@ -80,15 +89,19 @@ def main() -> None:
                                         "tn": 0,
                                         "fn": 0,
                                         "fp": 0}
-        
+
         for number in range(10):
             confusion_matrix[number]["tp"] = matrix[number][number]
-            confusion_matrix[number]["tn"] = sum([row[i]
-                                                  for i, row in enumerate(matrix)
-                                                  if i != number])
-            confusion_matrix[number]["fp"] = sum([row[number]
-                                                  for i, row in enumerate(matrix)
-                                                  if i != number])
+            confusion_matrix[number]["tn"] = (
+                sum([row[i]
+                     for i, row in enumerate(matrix)
+                     if i != number])
+            )
+            confusion_matrix[number]["fp"] = (
+                sum([row[number]
+                     for i, row in enumerate(matrix)
+                     if i != number])
+            )
             confusion_matrix[number]["fn"] = sum(matrix[number][:number] +
                                                  matrix[number][number+1:])
 
@@ -136,7 +149,9 @@ def main() -> None:
         epochs_train_data.append(train_ok / len(train_data))
         epochs_test_data.append(test_ok / len(test_data))
 
-        print(f"Train: {train_ok} / {len(train_data)} | Test: {test_ok} / {len(test_data)}")
+        msg = f"Train: {train_ok} / {len(train_data)} |"
+        msg += f" Test: {test_ok} / {len(test_data)}"
+        print(msg)
 
     helpers.draw_network_epochs(epochs_train_data, epochs_test_data)
 

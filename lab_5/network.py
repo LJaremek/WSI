@@ -83,8 +83,10 @@ class Network:
         return self._layers[layer_index]
 
     def train(self, mini_batch: List[Tuple[np.array, np.array]]) -> None:
-        delta_biases = [np.zeros(layer.biases.shape) for layer in self._layers]
-        delta_weights = [np.zeros(layer.weights.shape) for layer in self._layers]
+        delta_biases = [np.zeros(layer.biases.shape)
+                        for layer in self._layers]
+        delta_weights = [np.zeros(layer.weights.shape)
+                         for layer in self._layers]
 
         for sample in mini_batch:
             x, y = sample
@@ -97,7 +99,8 @@ class Network:
 
             for layer_index in range(len(self._layers)):
                 delta_biases[layer_index] += delta_biases_backprop[layer_index]
-                delta_weights[layer_index] += delta_weights_backprop[layer_index]
+                delta_weights[layer_index] += \
+                    delta_weights_backprop[layer_index]
 
         for layer_index in range(len(self._layers)):
             delta_biases[layer_index] *= 1.0 / len(mini_batch)
@@ -113,14 +116,17 @@ class Network:
         last_layer = self._layers[-1]
 
         cost_derivative = helpers.cost_derivative(last_layer.a, y)
-        sigmoid_derivative = activation_functions.sigmoid_derivative(last_layer.z)
+        sigmoid_derivative = (
+            activation_functions.sigmoid_derivative(last_layer.z)
+        )
 
         errors = []
         delta: np.array = cost_derivative * sigmoid_derivative
         errors.insert(0, delta)
 
         for layer_index in range(len(self._layers) - 2, -1, -1):
-            cost_derivative = np.dot(self._layers[layer_index + 1].weights.T, delta)
+            cost_derivative = np.dot(self._layers[layer_index + 1].weights.T,
+                                     delta)
             sigmoid_derivative = activation_functions.sigmoid_derivative(
                 self._layers[layer_index].z
             )
@@ -130,7 +136,9 @@ class Network:
 
         return errors
 
-    def get_delta_weights_and_biases_from_errors(self, inputs: np.array, errors: List[np.array]):
+    def get_delta_weights_and_biases_from_errors(self,
+                                                 inputs: np.array,
+                                                 errors: List[np.array]):
         to_change_biases = list()
         to_change_weights = list()
 
