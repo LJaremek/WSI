@@ -46,35 +46,35 @@ def draw_frequency_histogram(labels):
 def draw_network_epochs(measurements, learning_rate):
     fig, axes = plt.subplots(2, 2, figsize=(10, 10))
 
-    ((ax1, ax2), (ax3, ax4)) = axes
-
     epochs = len(measurements["accuracy"]["train"])
 
     fig.suptitle(f"Lr={learning_rate}", fontsize=16)
-    plt.setp((ax1, ax2, ax3, ax4), xticks=range(0, epochs))
 
-    ax1.title.set_text("accuracy")
-    ax1.set_xlabel("epochs")
-    ax1.plot(measurements["accuracy"]["train"])
-    ax1.plot(measurements["accuracy"]["test"])
+    axes[0, 0].plot(measurements["accuracy"]["train"])
+    axes[0, 0].plot(measurements["accuracy"]["test"])
+    axes[0, 0].set_title("accuracy")
+    axes[0, 0].set_xticks(range(0, epochs))
+    axes[0, 0].set_yticks([x/10 for x in range(0, 11)])
 
-    ax2.title.set_text("recall")
-    ax2.set_xlabel("epochs")
-    ax2.plot(measurements["recall"]["train"])
-    ax2.plot(measurements["recall"]["test"])
+    axes[0, 1].plot(measurements["recall"]["train"])
+    axes[0, 1].plot(measurements["recall"]["test"])
+    axes[0, 1].set_title("recall")
+    axes[0, 1].set_xticks(range(0, epochs))
+    axes[0, 1].set_yticks([x/10 for x in range(0, 11)])
 
-    ax3.title.set_text("cost")
-    ax3.set_xlabel("epochs")
-    ax3.plot(measurements["cost"]["train"])
-    ax3.plot(measurements["cost"]["test"])
+    axes[1, 0].plot(measurements["cost"]["train"])
+    axes[1, 0].plot(measurements["cost"]["test"])
+    axes[1, 0].set_title("cost")
+    axes[1, 0].set_xlabel("epochs")
+    axes[1, 0].set_xticks(range(0, epochs))
+    axes[1, 0].set_yticks([x/10 for x in range(0, 11)])
 
-    ax4.title.set_text("precision")
-    ax4.set_xlabel("epochs")
-    ax4.plot(measurements["precision"]["train"])
-    ax4.plot(measurements["precision"]["test"])
-
-    for ax in fig.get_axes():
-        ax.label_outer()
+    axes[1, 1].plot(measurements["precision"]["train"])
+    axes[1, 1].plot(measurements["precision"]["test"])
+    axes[1, 1].set_title("precision")
+    axes[1, 1].set_xlabel("epochs")
+    axes[1, 1].set_xticks(range(0, epochs))
+    axes[1, 1].set_yticks([x/10 for x in range(0, 11)])
 
     fig.legend(["train", "val"], loc="upper left")
     plt.show()

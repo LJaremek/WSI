@@ -20,7 +20,8 @@ test_labels = idx2numpy.convert_from_file(test_labels_file)
 LIST_MATRIX = List[List[int]]
 
 
-def create_confusion_matrix_and_cost(network: Network, data) -> Tuple[LIST_MATRIX, float]:
+def create_confusion_matrix_and_cost(network: Network,
+                                     data) -> Tuple[LIST_MATRIX, float]:
     confusion_matrix = [[0 for _ in range(10)] for _ in range(10)]
     cost_sum = 0
     for _, number in enumerate(data):
@@ -43,11 +44,17 @@ def create_measurements(matrix: LIST_MATRIX) -> dict:
 
     for number in range(10):
         measurements[number]["tp"] = matrix[number][number]
-        measurements[number]["tn"] = sum([row[i] for i, row in enumerate(matrix) if i != number])
+        measurements[number]["tn"] = sum([row[i]
+                                          for i, row in enumerate(matrix)
+                                          if i != number]
+                                         )
         measurements[number]["fp"] = sum(
             [row[number] for i, row in enumerate(matrix) if i != number]
         )
-        measurements[number]["fn"] = sum(matrix[number][:number] + matrix[number][number + 1 :])
+        measurements[number]["fn"] = (
+            sum(matrix[number][:number] +
+                matrix[number][number + 1:])
+        )
 
     return measurements
 
@@ -75,7 +82,8 @@ def get_measurements(
         except ZeroDivisionError:
             precision = -1
         try:
-            accuracy = (sum([measurement[key]["tp"]]) + sum([measurement[key]["tn"]])) / (
+            accuracy = (sum([measurement[key]["tp"]]) +
+                        sum([measurement[key]["tn"]])) / (
                 sum([measurement[key]["tp"]])
                 + sum([measurement[key]["fn"]])
                 + sum([measurement[key]["tn"]])
@@ -105,7 +113,8 @@ def main() -> None:
 
     learning_rate = 0.1
 
-    network = Network([network_input_size, 5, network_output_size], learning_rate=learning_rate)
+    network = Network([network_input_size, 5, network_output_size],
+                      learning_rate=learning_rate)
 
     train_data = prepare_data(all_images, all_labels)
     np.random.shuffle(train_data)
@@ -129,7 +138,7 @@ def main() -> None:
         for i in range(0, len(train_data) - batch_size, batch_size):
             mini_batch: List[Tuple[np.array, np.array]] = []
 
-            for _, number in enumerate(train_data[i : i + batch_size]):
+            for _, number in enumerate(train_data[i: i + batch_size]):
                 pixels, number_label = number
                 results: np.array = helpers.make_output(number_label)
                 mini_batch.append((pixels, results))
