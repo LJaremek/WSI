@@ -15,7 +15,7 @@ def way_exist(the_map: list,
         if (x, y) == stop:
             return True
 
-        the_map[x][y] = "."
+        the_map[x][y] = "x"
 
         fields = [(x+1, y),
                   (x-1, y),
@@ -36,6 +36,9 @@ def gen_map(width: int = 10,
             free: str = " ",
             wall: str = "#"
             ) -> list:
+    """
+    12x12 is max for my lap
+    """
 
     if end is None:
         end = (height-2, width-2)
@@ -43,14 +46,13 @@ def gen_map(width: int = 10,
     the_map = [list(wall*width),
                list(wall*width)]
     for _ in range(height-2):
-        the_map.insert(1, list(wall+free*(width-2)+wall))
+        the_map.insert(1, list(wall + free*(width-2) + wall))
 
     used = width*height//5
     tries = 0
-    while used != 0:
+    while used > 0:
         x = randint(1, width-1)
         y = randint(1, height-1)
-
         if the_map[x][y] != wall:
             the_map[x][y] = wall
 
@@ -60,7 +62,12 @@ def gen_map(width: int = 10,
                 tries += 1
                 the_map[x][y] = free
 
-        if tries > 20:
-            used -= 1
+            if tries > 20:
+                tries = 0
+                used -= 1
 
     return the_map
+
+
+if __name__ == "__main__":
+    [print(row) for row in gen_map(10, 10)]

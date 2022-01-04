@@ -3,8 +3,8 @@ from copy import deepcopy
 
 from map_generator import gen_map
 
-WIDTH = 5
-HEIGHT = 5
+WIDTH = 11
+HEIGHT = 11
 PLAYER = "@"
 FREE = " "
 WALL = "#"
@@ -28,7 +28,7 @@ with open("test_map.txt", "r", -1, "utf-8") as file:
 
 
 def find_player(the_map: list,
-                player: str) -> tuple:
+                player: str = "@") -> tuple:
     for row_index, row in enumerate(the_map):
         try:
             column_index = row.index(player)
@@ -42,24 +42,18 @@ def find_player(the_map: list,
 def make_move(the_map: list,
               direction: str,
               free_field: str = " ",
-              player: str = "@") -> list:
+              player: str = "@",
+              aim: str = "$") -> list:
     the_map = deepcopy(the_map)
-    for row_index, row in enumerate(the_map):
-        try:
-            column_index = row.index(player)
-            x = row_index
-            y = column_index
-            break
-        except ValueError:
-            pass
+    x, y = find_player(the_map, player)
 
-    moves = {"w": (x, y-1),
-             "s": (x, y+1),
-             "a": (x-1, y),
-             "d": (x+1, y)}
+    moves = {"w": (x-1, y),
+             "s": (x+1, y),
+             "a": (x, y-1),
+             "d": (x, y+1)}
 
     m_x, m_y = moves[direction]
-    if the_map[m_x][m_y] == free_field:
+    if the_map[m_x][m_y] in (free_field, aim):
         the_map[m_x][m_y] = player
         the_map[x][y] = free_field
 
@@ -76,7 +70,6 @@ def the_best_move(x: int, y: int):
     #         # print("rand")
     #         return random_move
     index = q_map[x][y].index(max(q_map[x][y]))
-    ## print("max", max(q_map[x][y]), "index", index, q_map[x][y])
     return moves[index]
 
 
@@ -85,13 +78,14 @@ def next_move(x: int, y: int, move: str) -> tuple:
              "s": (x+1, y),
              "a": (x, y-1),
              "d": (x, y+1)}
-    ## print("act:", x, y, "next:", moves[move])
     return moves[move]
 
 
 def game(the_map):
+    print("tworzę mapę ...")
     the_map = gen_map(WIDTH, HEIGHT)
     the_map[-2][-2] = "$"
+    print("... mapa stworzona.")
 
     f = open("fast_map.txt", "w")
     for row in the_map:
@@ -107,34 +101,40 @@ def game(the_map):
         x, y = (1, 1)
 
         while train_map[x][y] != AIM:
-            ## print("-")
-            ## print("act:", x, y)
-            # print(f"---\n{x} {y}")
             move = the_best_move(x, y)
-            # print(move)
             old_x, old_y = x, y
             x, y = next_move(old_x, old_y, move)
-            ## print("new act:", x, y)
 
             field = train_map[x][y]
-            # print(f"field '{field}'")
             if field == WALL:
-                # print("WALL !")
                 x, y = old_x, old_y
                 q_map[x][y][moves.index(move)] -= 1000
                 continue
 
             reward = FIELDS[field]
 
-            try:
-                old_q = q_map[old_x][old_y][moves.index(move)]
-                new_q = old_q + beta*(reward + gamma*max(q_map[x][y]) - old_q)
-                ## print(f"{x} {y} = {new_q}")
-            except:
-                print("!", x, y)
-                input()
+            old_q = q_map[old_x][old_y][moves.index(move)]
+            new_q = old_q + beta*(reward + gamma*max(q_map[x][y]) - old_q)
 
             q_map[old_x][old_y][moves.index(move)] = new_q
+
+    x, y = (1, 1)
+    train_map[x][y] = "@"
+    aim = find_player(train_map, "$")
+
+    for row in train_map:
+        print(row)
+
+    while (x, y) != aim:
+        move = the_best_move(x, y)
+        print(move)
+        old_x, old_y = x, y
+        x, y = next_move(old_x, old_y, move)
+
+        train_map = make_move(train_map, move)
+
+        for row in train_map:
+            print(row)
 
 
 game(the_map)
