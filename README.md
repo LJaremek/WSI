@@ -8,3 +8,4 @@
 3. Dwuosobowe gry deterministyczne ([Gra Isolation](https://github.com/LJaremek/WSI/tree/main/lab_3))
 4. Regresja i klasyfikacja ([ID3 + walidacja krzyżowa](https://github.com/LJaremek/WSI/tree/main/lab_4))
 5. Sieci neuronowe ([Klasyfikacja ręcznie pisanych cyfr](https://github.com/LJaremek/WSI/tree/main/lab_5))
+6. Uczenie ze wzocmnieniem ([Q-Learning](https://github.com/LJaremek/WSI/tree/main/lab_6))
