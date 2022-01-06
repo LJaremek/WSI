@@ -2,6 +2,22 @@ from random import randint
 from copy import deepcopy
 
 
+def open_map(path: str) -> list:
+    the_map = []
+
+    with open(path, "r", -1, "utf-8") as file:
+        for row in file:
+            the_map.append(list(row.strip()))
+
+    return the_map
+
+
+def save_map(the_map: list, file_name: str = "my_map.txt") -> None:
+    with open(file_name, "w", -1, "utf-8") as file:
+        for row in the_map:
+            print(row, file=file)
+
+
 def way_exist(the_map: list,
               start: tuple,
               stop: tuple,
@@ -51,8 +67,8 @@ def gen_map(width: int = 10,
     used = width*height//5
     tries = 0
     while used > 0:
-        x = randint(1, width-1)
-        y = randint(1, height-1)
+        x = randint(1, height-1)
+        y = randint(1, width-1)
         if the_map[x][y] != wall:
             the_map[x][y] = wall
 
@@ -70,22 +86,6 @@ def gen_map(width: int = 10,
 
 
 if __name__ == "__main__":
-    the_map = [
-['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
-['#', ' ', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', '#'],
-['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#'],
-['#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#', '#'],
-['#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', '#'],
-['#', '#', ' ', '#', ' ', '#', '#', ' ', '#', '#', ' ', '#'],
-['#', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', ' ', '#', '#'],
-['#', ' ', '#', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', '#'],
-['#', ' ', '#', '#', ' ', '#', ' ', ' ', ' ', '#', ' ', '#'],
-['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
-['#', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#'],
-['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
-    print(way_exist(the_map, (2, 4), (10, 10)))
-    input()
-
     the_map = gen_map(12, 12)
     [print(row) for row in the_map]
 
