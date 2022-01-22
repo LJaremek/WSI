@@ -7,6 +7,15 @@ from bayes_math import gaussian_probability
 
 
 class BayesDataClass:
+    """
+    Class represents one class of the data.
+
+    Init input:
+     * class_name: str
+     * class_col_index: int - index of the labels (class name)
+     * class_data: pd.DataFrame
+     * all_rows: int - number of rows in full data frame
+    """
     def __init__(self,
                  class_name: str,
                  class_col_index: int,
@@ -19,6 +28,10 @@ class BayesDataClass:
         self._calc_probabilities()
 
     def _calc_probabilities(self) -> None:
+        """
+        Calculate porbabilities for every column.
+        Function create self._class_prob and self._columns_prob.
+        """
         self._class_prob = len(self._data.columns)/self._all_rows
         self._columns_prob = []
         for column in self._data:
@@ -92,7 +105,6 @@ class NaiveBayes:
 
     Predict function:
      * check_row(row)
-
     """
     def __init__(self,
                  data: pd.DataFrame,
