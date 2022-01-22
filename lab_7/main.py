@@ -1,38 +1,35 @@
 import pandas as pd
 
-from bayes_math import gaussian_probability
 from data_reader import open_file
-
-data = pd.DataFrame(open_file())
-for column in data:
-    data[column] = pd.to_numeric(data[column])
-
-
-class NaiveBayes:
-    def __init__(self, data: pd.DataFrame, column_index: int = 0) -> None:
-        self._data = data
-        self._classes = self._devide_by_class(data, column_index)
-
-    def _devide_by_class(self,
-                         data: pd.DataFrame,
-                         column_index: int) -> dict[str, pd.DataFrame]:
-        """
-        Devide pandas data frame by class.
-
-        Input:
-         * data: pd.DataFrame
-         * column_index: int - index of column with classes
-
-        Output:
-         * dict[str, pd.DataFrame] - dict where key i the class
-            and value is a data frame with the class
-        """
-        return dict([
-                     (the_class, data[data[column_index] == the_class])
-                     for the_class in set(data[column_index])
-                     ])
-
+from bayes import NaiveBayes
 
 if __name__ == "__main__":
-    bayes = NaiveBayes(data, 0)
-    print(bayes._classes.keys())
+    data = pd.DataFrame(open_file())
+    label_index = 0
+    for column in data:
+        if column == label_index:
+            continue
+        data[column] = pd.to_numeric(data[column])
+
+    shuffle_data = data.sample(frac=1).reset_index(drop=True)
+
+    rows = len(shuffle_data)
+    train = 0.8
+    train_data = shuffle_data.iloc[int(rows*(1-train)):]
+
+    test_data = shuffle_data.iloc[:int(rows*(1-train))]
+
+    bayes = NaiveBayes(train_data, label_index)
+
+    ok = 0
+    not_ok = 0
+    for index, row in test_data.iterrows():
+        drop_row = row.drop(label_index, 0)
+        if row[0] != bayes.check_row(drop_row):
+            print(row[0], bayes.check_row(drop_row))
+            not_ok += 1
+        else:
+            ok += 1
+
+    print("not ok", not_ok)
+    print("ok", ok)
