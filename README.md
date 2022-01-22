@@ -9,3 +9,4 @@
 4. Regresja i klasyfikacja ([ID3 + walidacja krzyżowa](https://github.com/LJaremek/WSI/tree/main/lab_4))
 5. Sieci neuronowe ([Klasyfikacja ręcznie pisanych cyfr](https://github.com/LJaremek/WSI/tree/main/lab_5))
 6. Uczenie ze wzocmnieniem ([Q-Learning](https://github.com/LJaremek/WSI/tree/main/lab_6))
+7. Modele Bayesowskie ([Naiwny Klasyfikator Bayesowski](https://github.com/LJaremek/WSI/tree/main/lab_7))
